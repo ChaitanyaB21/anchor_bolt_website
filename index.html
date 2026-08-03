@@ -15,10 +15,16 @@
     <span class="title-sub">Calculations per ACI 318-19 Chapter 17 & PIP STE05121. Factored loads for N<sub>ua</sub> and V<sub>ua</sub>.</span>
   </header>
 
-  <div class="workspace">
+  <nav class="mobile-nav">
+    <button class="mobile-tab-btn active" data-panel="input-panel">Inputs</button>
+    <button class="mobile-tab-btn" data-panel="views-panel">Views</button>
+    <button class="mobile-tab-btn" data-panel="results-panel">Results</button>
+  </nav>
+
+  <div class="workspace" id="workspace">
 
     <!-- ============ LEFT: INPUT PANEL ============ -->
-    <aside class="panel input-panel">
+    <aside class="panel input-panel" id="input-panel">
 
       <section class="input-group">
         <h2>Loading Conditions</h2>
@@ -141,11 +147,21 @@
         </div>
         <div class="field">
           <label for="n_tension">Number of anchors in tension = n(tension)</label>
-          <input type="number" class="yellow" id="n_tension" value="1" step="1" min="1">
+          <select class="yellow" id="n_tension">
+            <option value="0">0</option>
+            <option value="1" selected>1</option>
+            <option value="2">2</option>
+            <option value="4">4</option>
+          </select>
         </div>
         <div class="field">
           <label for="n_shear">Number of anchors in shear = n(shear)</label>
-          <input type="number" class="yellow" id="n_shear" value="1" step="1" min="1">
+          <select class="yellow" id="n_shear">
+            <option value="0">0</option>
+            <option value="1" selected>1</option>
+            <option value="2">2</option>
+            <option value="4">4</option>
+          </select>
         </div>
       </section>
 
@@ -178,8 +194,8 @@
           <span class="note">(must be &lt;= s perp to moment/2, positive)</span>
         </div>
         <div class="field">
-          <label for="s_direction">Direction of s (1 = s1, 2 = s2)</label>
-          <select class="yellow" id="s_direction"><option selected value="1">1</option><option value="2">2</option></select>
+          <label for="s_direction">Direction of s for 2-anchor group</label>
+          <select class="yellow" id="s_direction"><option value="s1">s1 (horizontal)</option><option value="s2">s2 (vertical)</option></select>
         </div>
         <div class="field">
           <label for="e_v">Eccentricity of shear force on group (in.) = e'<sub>V</sub></label>
@@ -213,8 +229,10 @@
       <p class="note disclaimer">Diagrams and summary update live. Result values are calculated per ACI 318-19 Chapter 17 & PIP STE05121.</p>
     </aside>
 
+    <div class="resizer" id="resizer-left"></div>
+
     <!-- ============ CENTER: 2D VIEWS ============ -->
-    <main class="views-panel">
+    <main class="panel views-panel" id="views-panel">
       <div class="view-block">
         <h2>Side View — Breakout Cone for Tension</h2>
         <div class="view-frame" id="side-view"></div>
@@ -225,8 +243,10 @@
       </div>
     </main>
 
+    <div class="resizer" id="resizer-right"></div>
+
     <!-- ============ RIGHT: SUMMARY OF RESULTS ============ -->
-    <aside class="panel results-panel">
+    <aside class="panel results-panel" id="results-panel">
       <h2>Summary of Results</h2>
 
       <div class="result-row">
