@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Anchor Bolt Design — ACI 318-19 Chapter 17</title>
+<link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+
+<div class="app">
+
+  <header class="titlebar">
+    <span class="title-main">Anchor Bolt Design</span>
+    <span class="title-sub">Calculations per ACI 318-19 Chapter 17 & PIP STE05121. Factored loads for N<sub>ua</sub> and V<sub>ua</sub>.</span>
+  </header>
+
+  <div class="workspace">
+
+    <!-- ============ LEFT: INPUT PANEL ============ -->
+    <aside class="panel input-panel">
+
+      <section class="input-group">
+        <h2>Loading Conditions</h2>
+        <div class="field">
+          <label for="n_ua">Factored tensile load (kips) = N<sub>ua</sub></label>
+          <input type="number" class="yellow" id="n_ua" value="0" step="1">
+        </div>
+        <div class="field">
+          <label for="shear_dir">Factored shear load (kips) = V<sub>ua</sub></label>
+          <select class="yellow" id="shear_dir">
+            <option selected>perpendicular to edge</option>
+            <option>parallel to edge</option>
+          </select>
+          <input type="number" class="yellow" id="v_ua" value="0" step="1">
+        </div>
+        <div class="field">
+          <label for="grout_pad">Is there a built-up grout pad?</label>
+          <select class="yellow" id="grout_pad"><option>Yes</option><option selected>No</option></select>
+        </div>
+      </section>
+
+      <section class="input-group">
+        <h2>Design Considerations</h2>
+        <div class="field">
+          <label for="ductility_req">Tension Ductility required?</label>
+          <select class="yellow" id="ductility_req"><option>Yes</option><option selected>No</option></select>
+          <span class="note">(See ductility discussion - Note 11)</span>
+        </div>
+        <div class="field">
+          <label for="seismic_cat">Seismic Category</label>
+          <select class="yellow" id="seismic_cat">
+            <option>A, B</option>
+            <option selected>C, D, E, or F</option>
+          </select>
+          <span class="note">(ACI 318-19 Sec. 17.10)</span>
+        </div>
+        <div class="field">
+          <label for="f_c">Specified concrete strength (psi) = f'c</label>
+          <input type="number" class="yellow" id="f_c" value="4500" step="50">
+        </div>
+        <div class="field">
+          <label for="cracking_factor">Cracking modification factor, &Psi;<sub>c,V</sub></label>
+          <select class="yellow" id="cracking_factor">
+            <option value="1.0">1.0 - No edge reinf or edge reinf rebar &lt; #4</option>
+            <option value="1.2" selected>1.2 - Edge reinf rebar &gt;= #4</option>
+            <option value="1.4">1.4 - Edge reinf rebar &gt;= #4 + stirrups @ &lt;= 4 in.</option>
+            <option value="1.4_uncracked">1.4 - Located in region without cracking (f_t &lt; f_r)</option>
+          </select>
+          <span class="note">(ACI 318-19 Section 17.7.2.5 / PIP Table)</span>
+        </div>
+        <div class="field">
+          <label for="psi_m_n">Breakout overturning factor &Psi;<sub>m,N</sub> (1 if no overturning couple)</label>
+          <input type="number" class="yellow" id="psi_m_n" value="1" step="0.05">
+        </div>
+        <div class="field">
+          <label for="reinf_tension">Adequate reinf. to resist tension loads/capacity in anchors?</label>
+          <select class="yellow" id="reinf_tension"><option>Yes</option><option selected>No</option></select>
+        </div>
+        <div class="field">
+          <label for="reinf_shear">Adequate reinf. to resist shear loads/capacity in anchors?</label>
+          <select class="yellow" id="reinf_shear"><option>Yes</option><option selected>No</option></select>
+        </div>
+        <div class="field">
+          <label for="supp_reinf_tension">Supplementary reinf. provided for Condition A (tension)?</label>
+          <select class="yellow" id="supp_reinf_tension"><option>Yes</option><option selected>No</option></select>
+        </div>
+        <div class="field">
+          <label for="supp_reinf_shear">Supplementary reinf. provided for Condition A (shear)?</label>
+          <select class="yellow" id="supp_reinf_shear"><option>Yes</option><option selected>No</option></select>
+          <span class="note">(ACI 318-19 Table 17.5.3(b))</span>
+        </div>
+      </section>
+
+      <section class="input-group">
+        <h2>Anchor Data, Embedment, and Thickness of Member</h2>
+        <div class="field">
+          <label for="anchor_material">Anchor material type</label>
+          <select class="yellow" id="anchor_material">
+            <option>A307-Type A, Fu=60</option>
+            <option>A36</option>
+            <option>F1554 Gr 36</option>
+            <option>F1554 Gr 55</option>
+            <option selected>F1554 Gr 105</option>
+            <option>A193 Gr B7</option>
+            <option>A354 Gr BC</option>
+            <option>A354 Gr BD</option>
+            <option>A449</option>
+            <option>A320 Gr L7</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="diameter">Nominal anchor diameter (in.)</label>
+          <select class="yellow" id="diameter">
+            <option value="0.5">1/2 (0.500")</option>
+            <option value="0.625">5/8 (0.625")</option>
+            <option value="0.75">3/4 (0.750")</option>
+            <option value="0.875">7/8 (0.875")</option>
+            <option value="1">1 (1.000")</option>
+            <option value="1.125">1 1/8 (1.125")</option>
+            <option value="1.25">1 1/4 (1.250")</option>
+            <option value="1.375">1 3/8 (1.375")</option>
+            <option value="1.5">1 1/2 (1.500")</option>
+            <option value="1.75">1 3/4 (1.750")</option>
+            <option value="2" selected>2 (2.000")</option>
+            <option value="2.25">2 1/4 (2.250")</option>
+            <option value="2.5">2 1/2 (2.500")</option>
+            <option value="2.75">2 3/4 (2.750")</option>
+            <option value="3">3 (3.000")</option>
+            <option value="4">4 (4.000")</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="hef">Effective anchor embedment depth (in.) = h<sub>ef</sub></label>
+          <input type="number" class="yellow" id="hef" value="18" step="0.5">
+          <span class="note" id="hef_min_note">Minimum h<sub>ef,min</sub> = 24.0 in.</span>
+        </div>
+        <div class="field">
+          <label for="ha">Thickness of member in which anchor is anchored (in.) = h<sub>a</sub></label>
+          <input type="number" class="yellow" id="ha" value="36" step="1">
+        </div>
+        <div class="field">
+          <label for="n_tension">Number of anchors in tension = n(tension)</label>
+          <input type="number" class="yellow" id="n_tension" value="1" step="1" min="1">
+        </div>
+        <div class="field">
+          <label for="n_shear">Number of anchors in shear = n(shear)</label>
+          <input type="number" class="yellow" id="n_shear" value="1" step="1" min="1">
+        </div>
+      </section>
+
+      <section class="input-group">
+        <h2>Concrete Failure Areas</h2>
+        <p class="note">Units for A<sub>Nc</sub> and A<sub>Vc</sub> are sq. in.</p>
+        <div class="field">
+          <label for="manual_anc">Manually input the value of A<sub>Nc</sub>?</label>
+          <select class="yellow" id="manual_anc"><option selected>Yes</option><option>No</option></select>
+        </div>
+        <div class="field">
+          <label for="anc_value">A<sub>Nc</sub> =</label>
+          <input type="number" class="yellow" id="anc_value" value="2916" step="1">
+        </div>
+        <div class="field">
+          <label for="manual_avc">Manually input the value of A<sub>Vc</sub>?</label>
+          <select class="yellow" id="manual_avc"><option selected>Yes</option><option>No</option></select>
+        </div>
+        <div class="field">
+          <label for="avc_value">A<sub>Vc</sub> =</label>
+          <input type="number" class="yellow" id="avc_value" value="2886.35" step="0.01">
+        </div>
+      </section>
+
+      <section class="input-group">
+        <h2>Eccentricity</h2>
+        <div class="field">
+          <label for="e_n">Eccentricity of tensile force on group (in.) = e'<sub>N</sub></label>
+          <input type="number" class="yellow" id="e_n" value="0" step="0.5">
+          <span class="note">(must be &lt;= s perp to moment/2, positive)</span>
+        </div>
+        <div class="field">
+          <label for="s_direction">Direction of s (1 = s1, 2 = s2)</label>
+          <select class="yellow" id="s_direction"><option selected value="1">1</option><option value="2">2</option></select>
+        </div>
+        <div class="field">
+          <label for="e_v">Eccentricity of shear force on group (in.) = e'<sub>V</sub></label>
+          <input type="number" class="yellow" id="e_v" value="0" step="0.5">
+          <span class="note">(0 = single anchor)</span>
+        </div>
+      </section>
+
+      <section class="input-group">
+        <h2>Edge Distances and Spacing</h2>
+        <div class="edge-columns">
+          <div class="edge-col">
+            <h3>Tension</h3>
+            <div class="field-inline"><label for="ca1_t">c<sub>a1</sub></label><input type="number" class="yellow" id="ca1_t" value="36.00" step="0.01"></div>
+            <div class="field-inline"><label for="ca2_t">c<sub>a2</sub></label><input type="number" class="yellow" id="ca2_t" value="40.09" step="0.01"></div>
+            <div class="field-inline"><label for="ca3_t">c<sub>a3</sub></label><input type="number" class="yellow" id="ca3_t" value="27.00" step="0.01"></div>
+            <div class="field-inline"><label for="ca4_t">c<sub>a4</sub></label><input type="number" class="yellow" id="ca4_t" value="40.09" step="0.01"></div>
+            <div class="field-inline"><label for="s1_t">s<sub>1</sub></label><input type="number" class="yellow" id="s1_t" value="0.00" step="0.5"></div>
+            <div class="field-inline"><label for="s2_t">s<sub>2</sub></label><input type="number" class="yellow" id="s2_t" value="0.00" step="0.5"></div>
+          </div>
+          <div class="edge-col">
+            <h3>Shear</h3>
+            <div class="field-inline"><label for="ca1_v">c<sub>a1</sub></label><input type="number" class="yellow" id="ca1_v" value="36.00" step="0.01"></div>
+            <div class="field-inline"><label for="ca2_v">c<sub>a2</sub></label><input type="number" class="yellow" id="ca2_v" value="40.09" step="0.01"></div>
+            <div class="field-inline"><label for="s1_v">s<sub>1</sub></label><input type="number" class="yellow" id="s1_v" value="0.00" step="0.5"></div>
+            <div class="field-inline"><label for="s2_v">s<sub>2</sub></label><input type="number" class="yellow" id="s2_v" value="0.00" step="0.5"></div>
+          </div>
+        </div>
+      </section>
+
+      <p class="note disclaimer">Diagrams and summary update live. Result values are calculated per ACI 318-19 Chapter 17 & PIP STE05121.</p>
+    </aside>
+
+    <!-- ============ CENTER: 2D VIEWS ============ -->
+    <main class="views-panel">
+      <div class="view-block">
+        <h2>Side View — Breakout Cone for Tension</h2>
+        <div class="view-frame" id="side-view"></div>
+      </div>
+      <div class="view-block">
+        <h2>Top View — Edge Distances and Spacing</h2>
+        <div class="view-frame" id="top-view"></div>
+      </div>
+    </main>
+
+    <!-- ============ RIGHT: SUMMARY OF RESULTS ============ -->
+    <aside class="panel results-panel">
+      <h2>Summary of Results</h2>
+
+      <div class="result-row">
+        <span class="result-label">Ductility</span>
+        <span class="result-val" id="res-ductility">—</span>
+      </div>
+
+      <div class="result-row">
+        <span class="result-label">Eq. 1: &phi;N<sub>n</sub></span>
+        <span class="result-val" id="res-nn">— kips</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">N<sub>ua</sub></span>
+        <span class="result-val" id="res-nua">— kips</span>
+      </div>
+
+      <div class="result-row">
+        <span class="result-label">Eq. 2: &phi;V<sub>n</sub></span>
+        <span class="result-val" id="res-vn">— kips</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">V<sub>ua</sub></span>
+        <span class="result-val" id="res-vua">— kips</span>
+      </div>
+
+      <div class="result-row">
+        <span class="result-label">Eq. 3: Interaction Ratio</span>
+        <span class="result-val" id="res-interaction">—</span>
+      </div>
+
+      <div class="status-box" id="status-box">
+        <span id="status-text">—</span>
+      </div>
+
+      <div class="breakdown-box">
+        <h3>Detailed Capacity Breakdown</h3>
+        <div id="capacity-breakdown"></div>
+      </div>
+
+      <p class="note disclaimer">ACI 318-19 Chapter 17 design checks.</p>
+    </aside>
+
+  </div>
+</div>
+
+<script src="./js/app.js"></script>
+</body>
+</html>
