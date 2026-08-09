@@ -15,7 +15,6 @@
   --font-ui: Arial, Helvetica, sans-serif;
   --font-mono: "Consolas", "Courier New", monospace;
   
-  /* Initial widths for the resizable panels */
   --input-panel-width: 350px;
   --results-panel-width: 310px;
 }
@@ -33,7 +32,6 @@ html, body {
 
 .app { display: flex; flex-direction: column; height: 100vh; }
 
-/* ---------------- Title strip ---------------- */
 .titlebar {
   flex: 0 0 auto;
   padding: 10px 16px;
@@ -43,9 +41,8 @@ html, body {
 .title-main { font-size: 16px; font-weight: bold; margin-right: 14px; }
 .title-sub { font-size: 11px; color: var(--grey-dark); font-style: italic; }
 
-/* ---------------- Mobile Navigation ---------------- */
 .mobile-nav {
-  display: none; /* Hidden by default, shown on mobile */
+  display: none;
   flex: 0 0 auto;
   background-color: var(--grey-light);
   border-bottom: 1px solid var(--grey-mid);
@@ -66,11 +63,9 @@ html, body {
   box-shadow: inset 0 -2px 0 var(--black);
 }
 
-/* ---------------- Workspace grid ---------------- */
 .workspace {
   flex: 1 1 auto;
   display: grid;
-  /* Use CSS variables for resizable columns */
   grid-template-columns: var(--input-panel-width) 5px 1fr 5px var(--results-panel-width);
   min-height: 0;
 }
@@ -81,14 +76,12 @@ html, body {
   background: var(--white);
 }
 
-/* ---------------- Resizer Handles ---------------- */
 .resizer {
   background-color: var(--black);
   cursor: col-resize;
   flex-shrink: 0;
 }
 .resizer:hover { background-color: var(--red); }
-
 
 .panel h2 {
   font-size: 12px;
@@ -148,7 +141,6 @@ input.yellow:focus, select.yellow:focus {
   box-shadow: 0 0 0 1px var(--black) inset;
 }
 
-/* Loading Conditions: dropdown + value share a row */
 #shear_dir { margin-bottom: 6px; }
 
 .edge-columns { display: flex; gap: 14px; }
@@ -177,7 +169,6 @@ input.yellow:focus, select.yellow:focus {
   border-top: 1px solid var(--grey-mid);
 }
 
-/* ---------------- 2D Views (center) ---------------- */
 .views-panel {
   padding: 16px;
   overflow-y: auto;
@@ -207,10 +198,32 @@ input.yellow:focus, select.yellow:focus {
   align-items: center;
   justify-content: center;
   padding: 10px;
+  position: relative; 
 }
 .view-frame svg { display: block; width: 100%; height: auto; max-height: 380px; }
 
-/* ---------------- Results panel ---------------- */
+.rebar {
+  stroke: var(--green);
+  stroke-width: 3;
+  fill: none;
+}
+
+.breakout-cone-tension {
+  fill: #bfbfbf;
+  fill-opacity: 0.6;
+  stroke: #000;
+  stroke-width: 1;
+  stroke-dasharray: 4,3;
+}
+
+.breakout-cone-shear {
+  fill: #bfbfbf;
+  fill-opacity: 0.5;
+  stroke: var(--black);
+  stroke-width: 1;
+  stroke-dasharray: 4,3;
+}
+
 .result-row {
   display: flex;
   justify-content: space-between;
@@ -250,7 +263,24 @@ input.yellow:focus, select.yellow:focus {
 .bd-group ul { margin: 4px 0 0 16px; padding: 0; }
 .bd-group li { font-family: var(--font-mono); color: var(--grey-dark); }
 
-/* ---------------- Responsive ---------------- */
+.show-calcs-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-top: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  font-family: var(--font-ui);
+  color: var(--black);
+  background-color: var(--yellow);
+  border: 1px solid var(--black);
+  cursor: pointer;
+  text-align: center;
+}
+.show-calcs-btn:hover {
+  background-color: var(--yellow-focus);
+}
+
 @media (max-width: 1100px) {
   .workspace { 
     grid-template-columns: var(--input-panel-width) 5px 1fr 5px var(--results-panel-width);
@@ -258,25 +288,16 @@ input.yellow:focus, select.yellow:focus {
 }
 
 @media (max-width: 860px) {
-  /* Switch to a single column layout for the workspace */
   .workspace { 
     grid-template-columns: 1fr;
     overflow-y: auto;
   }
-  
-  /* Hide resizers on mobile */
   .resizer { display: none; }
-  
-  /* Show mobile navigation tabs */
   .mobile-nav { display: flex; }
-  
-  /* Hide all panels by default on mobile */
   .panel {
     display: none;
     border-bottom: 2px solid var(--black);
   }
-  
-  /* Show only the active panel */
   .panel.active {
     display: block;
   }

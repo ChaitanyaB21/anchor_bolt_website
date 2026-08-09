@@ -13,7 +13,6 @@ function text(x, y, str, extra) {
   return tag("text", { x, y, "font-size": 11, "font-family": "Consolas, monospace", fill: "#000", "text-anchor": "middle", ...extra }, str);
 }
 
-// PIP STE05121 Table: Standard Bolt Mechanical and Geometrical Properties
 const BOLT_PROPS = {
   "0.5":   { da: 0.500, ase: 0.142, abrg: 0.467,  hef_min: 6.0 },
   "0.625": { da: 0.625, ase: 0.226, abrg: 0.671,  hef_min: 7.5 },
@@ -33,21 +32,16 @@ const BOLT_PROPS = {
   "4":     { da: 4.000, ase: 11.080,abrg: 19.923, hef_min: 48.0 }
 };
 
-// PIP STE05121 Table: Anchor Material Properties & Diameter Rules
 function getMaterialProperties(materialName, diameterVal) {
   const d = parseFloat(diameterVal);
   switch (materialName) {
-    case "A307-Type A, Fu=60":
-      return { fya: 0, futa: 60, ductile: true };
-    case "A36":
-      return { fya: 36, futa: 58, ductile: true };
-    case "F1554 Gr 36":
-      return { fya: 36, futa: 58, ductile: true };
+    case "A307-Type A, Fu=60": return { fya: 0, futa: 60, ductile: true };
+    case "A36": return { fya: 36, futa: 58, ductile: true };
+    case "F1554 Gr 36": return { fya: 36, futa: 58, ductile: true };
     case "F1554 Gr 55":
       if (d <= 2.0) return { fya: 55, futa: 75, ductile: true };
       else return { fya: 55, futa: 75, ductile: false };
-    case "F1554 Gr 105":
-      return { fya: 105, futa: 125, ductile: true };
+    case "F1554 Gr 105": return { fya: 105, futa: 125, ductile: true };
     case "A193 Gr B7":
       if (d <= 2.5) return { fya: 105, futa: 125, ductile: true };
       else if (d <= 4.0) return { fya: 95, futa: 115, ductile: true };
@@ -62,10 +56,8 @@ function getMaterialProperties(materialName, diameterVal) {
       if (d <= 1.0) return { fya: 92, futa: 120, ductile: true };
       else if (d <= 1.5) return { fya: 81, futa: 105, ductile: true };
       else return { fya: 58, futa: 90, ductile: true };
-    case "A320 Gr L7":
-      return { fya: 105, futa: 125, ductile: true };
-    default:
-      return { fya: 105, futa: 125, ductile: true };
+    case "A320 Gr L7": return { fya: 105, futa: 125, ductile: true };
+    default: return { fya: 105, futa: 125, ductile: true };
   }
 }
 
@@ -77,42 +69,19 @@ function readInputs() {
   const val = (id) => document.getElementById(id).value;
 
   return {
-    n_ua: num("n_ua", 0),
-    v_ua: num("v_ua", 0),
-    shear_dir: val("shear_dir"),
-    grout_pad: val("grout_pad"),
-    ductility_req: val("ductility_req"),
-    seismic_cat: val("seismic_cat"),
-    f_c: num("f_c", 4500),
-    cracking_factor: val("cracking_factor"),
-    psi_m_n: num("psi_m_n", 1),
-    reinf_tension: val("reinf_tension"),
-    reinf_shear: val("reinf_shear"),
-    supp_reinf_tension: val("supp_reinf_tension"),
-    supp_reinf_shear: val("supp_reinf_shear"),
-    anchor_material: val("anchor_material"),
-    diameter: val("diameter"),
-    hef: Math.max(num("hef", 1), 0.1),
-    ha: Math.max(num("ha", 1), 0.1),
-    n_tension: parseInt(val("n_tension"), 10),
-    n_shear: parseInt(val("n_shear"), 10),
-    manual_anc: val("manual_anc"),
-    anc_value: num("anc_value", 0),
-    manual_avc: val("manual_avc"),
-    avc_value: num("avc_value", 0),
-    e_n: num("e_n", 0),
-    s_direction: val("s_direction"),
-    e_v: num("e_v", 0),
-    ca1_t: Math.max(num("ca1_t", 0.1), 0.1),
-    ca2_t: Math.max(num("ca2_t", 0.1), 0.1),
-    ca3_t: Math.max(num("ca3_t", 0.1), 0.1),
-    ca4_t: Math.max(num("ca4_t", 0.1), 0.1),
-    s1_t: Math.max(num("s1_t", 0), 0),
-    s2_t: Math.max(num("s2_t", 0), 0),
-    ca1_v: Math.max(num("ca1_v", 0.1), 0.1),
-    ca2_v: Math.max(num("ca2_v", 0.1), 0.1),
-    s1_v: Math.max(num("s1_v", 0), 0),
-    s2_v: Math.max(num("s2_v", 0), 0),
+    n_ua: num("n_ua", 0), v_ua: num("v_ua", 0), shear_dir: val("shear_dir"), grout_pad: val("grout_pad"),
+    ductility_req: val("ductility_req"), seismic_cat: val("seismic_cat"), f_c: num("f_c", 4500), cracking_factor: val("cracking_factor"),
+    psi_m_n: num("psi_m_n", 1), reinf_tension: val("reinf_tension"), reinf_shear: val("reinf_shear"),
+    supp_reinf_tension: val("supp_reinf_tension"), supp_reinf_shear: val("supp_reinf_shear"),
+    anchor_material: val("anchor_material"), diameter: val("diameter"), hef: Math.max(num("hef", 1), 0.1), ha: Math.max(num("ha", 1), 0.1),
+    n_tension: parseInt(val("n_tension"), 10), n_shear: parseInt(val("n_shear"), 10),
+    manual_anc: val("manual_anc"), anc_value: num("anc_value", 0), manual_avc: val("manual_avc"), avc_value: num("avc_value", 0),
+    e_n: num("e_n", 0), s_direction: val("s_direction"), e_v: num("e_v", 0),
+    ca1_t: Math.max(num("ca1_t", 0.1), 0.1), ca2_t: Math.max(num("ca2_t", 0.1), 0.1), ca3_t: Math.max(num("ca3_t", 0.1), 0.1), ca4_t: Math.max(num("ca4_t", 0.1), 0.1),
+    s1_t: Math.max(num("s1_t", 0), 0), s2_t: Math.max(num("s2_t", 0), 0),
+    ca1_v: Math.max(num("ca1_v", 0.1), 0.1), ca2_v: Math.max(num("ca2_v", 0.1), 0.1),
+    s1_v: Math.max(num("s1_v", 0), 0), s2_v: Math.max(num("s2_v", 0), 0),
+    consider_plate: val("consider_plate"), nut_dia: num("nut_dia"), plate_dia: num("plate_dia"), plate_thick: num("plate_thick"),
   };
 }
 
@@ -123,71 +92,52 @@ function updateSpacingInputs(inputs) {
   const s1_v_el = document.getElementById("s1_v");
   const s2_v_el = document.getElementById("s2_v");
   
-  // Logic for Tension anchors
   switch (inputs.n_tension) {
     case 4:
-      s_dir_el.disabled = true;
-      s1_t_el.disabled = false;
-      s2_t_el.disabled = false;
+      s_dir_el.disabled = true; s1_t_el.disabled = false; s2_t_el.disabled = false;
       break;
     case 2:
       s_dir_el.disabled = false;
       if (inputs.s_direction === "s1") {
-        s1_t_el.disabled = false;
-        s2_t_el.disabled = true;
-        s2_t_el.value = "0.00";
-        inputs.s2_t = 0;
-      } else { // s2
-        s1_t_el.disabled = true;
-        s2_t_el.disabled = false;
-        s1_t_el.value = "0.00";
-        inputs.s1_t = 0;
+        s1_t_el.disabled = false; s2_t_el.disabled = true; s2_t_el.value = "0.00"; inputs.s2_t = 0;
+      } else {
+        s1_t_el.disabled = true; s2_t_el.disabled = false; s1_t_el.value = "0.00"; inputs.s1_t = 0;
       }
       break;
-    default: // 0 or 1
-      s_dir_el.disabled = true;
-      s1_t_el.disabled = true;
-      s2_t_el.disabled = true;
-      s1_t_el.value = "0.00";
-      s2_t_el.value = "0.00";
-      inputs.s1_t = 0;
-      inputs.s2_t = 0;
+    default:
+      s_dir_el.disabled = true; s1_t_el.disabled = true; s2_t_el.disabled = true;
+      s1_t_el.value = "0.00"; s2_t_el.value = "0.00"; inputs.s1_t = 0; inputs.s2_t = 0;
       break;
   }
   
-  // Logic for Shear anchors (simplified, assumes same layout as tension for now)
-  const n_shear = inputs.n_shear;
-  if (n_shear <= 1) {
-    s1_v_el.disabled = true; s2_v_el.disabled = true;
-    s1_v_el.value = "0.00"; s2_v_el.value = "0.00";
-    inputs.s1_v = 0; inputs.s2_v = 0;
-  } else if (n_shear === 2) {
-    s1_v_el.disabled = false; s2_v_el.disabled = true; // Default to horizontal pair
-    s2_v_el.value = "0.00";
-    inputs.s2_v = 0;
-  } else { // 4
+  if (inputs.n_shear <= 1) {
+    s1_v_el.disabled = true; s2_v_el.disabled = true; s1_v_el.value = "0.00"; s2_v_el.value = "0.00"; inputs.s1_v = 0; inputs.s2_v = 0;
+  } else if (inputs.n_shear === 2) {
+    s1_v_el.disabled = false; s2_v_el.disabled = true; s2_v_el.value = "0.00"; inputs.s2_v = 0;
+  } else {
     s1_v_el.disabled = false; s2_v_el.disabled = false;
   }
 
-  const bolt = BOLT_PROPS[inputs.diameter] || BOLT_PROPS["2"];
-  const noteEl = document.getElementById("hef_min_note");
-  if (noteEl) {
-    noteEl.textContent = `Minimum h_ef,min = ${bolt.hef_min.toFixed(1)} in.`;
+  const hefNoteEl = document.getElementById("hef_min_note");
+  if (hefNoteEl) {
+      hefNoteEl.style.display = (inputs.ductility_req === 'Yes') ? 'block' : 'none';
+      const bolt = BOLT_PROPS[inputs.diameter] || BOLT_PROPS["2"];
+      hefNoteEl.textContent = `Minimum h_ef,min = ${bolt.hef_min.toFixed(1)} in.`;
+  }
+
+  const plateInputsGroup = document.getElementById("plate-inputs-group");
+  if(plateInputsGroup) {
+      plateInputsGroup.style.display = (inputs.consider_plate === 'Yes') ? 'block' : 'none';
   }
 }
 
 function getAnchorPositions(n, s_dir, s1, s2, c1, c2) {
     const positions = [];
     switch (n) {
-        case 1:
-            positions.push([c1, c2]);
-            break;
+        case 1: positions.push([c1, c2]); break;
         case 2:
-            if (s_dir === "s1") {
-                positions.push([c1, c2], [c1 + s1, c2]);
-            } else { // s2
-                positions.push([c1, c2], [c1, c2 + s2]);
-            }
+            if (s_dir === "s1") { positions.push([c1, c2], [c1 + s1, c2]); } 
+            else { positions.push([c1, c2], [c1, c2 + s2]); }
             break;
         case 4:
             positions.push([c1, c2], [c1 + s1, c2], [c1, c2 + s2], [c1 + s1, c2 + s2]);
@@ -198,36 +148,28 @@ function getAnchorPositions(n, s_dir, s1, s2, c1, c2) {
 
 function calculateAnc(inputs) {
   const { hef, ca1_t, ca2_t, ca3_t, ca4_t, s1_t, s2_t, n_tension } = inputs;
-
   const spanX = (n_tension === 2 && inputs.s_direction === 's1') || n_tension === 4 ? s1_t : 0;
   const spanY = (n_tension === 2 && inputs.s_direction === 's2') || n_tension === 4 ? s2_t : 0;
-  
   const c1_eff = Math.min(ca1_t, 1.5 * hef);
   const c3_eff = Math.min(ca3_t, 1.5 * hef);
   const c2_eff = Math.min(ca2_t, 1.5 * hef);
   const c4_eff = Math.min(ca4_t, 1.5 * hef);
-
   const totalX = c1_eff + c3_eff + spanX;
   const totalY = c2_eff + c4_eff + spanY;
-
   return totalX * totalY;
 }
 
 function calculateAvc(inputs) {
   const { ca1_v, ca2_v, ha, s1_v, s2_v, n_shear, shear_dir } = inputs;
-  
   if (n_shear === 0) return 0;
-  
   const c_a1 = ca1_v;
   const h_eff = Math.min(ha, 1.5 * c_a1);
   const c_a2_eff = Math.min(ca2_v, 1.5 * c_a1);
-
   if (shear_dir === "perpendicular to edge") {
-    // Assuming s2 is vertical spacing for shear as well
     const span2 = (n_shear > 1) ? s2_v : 0; 
     const totalWidth = 1.5 * c_a1 + c_a2_eff + span2;
     return totalWidth * h_eff;
-  } else { // parallel to edge
+  } else {
     const span1 = (n_shear > 1) ? s1_v : 0;
     const totalWidth = 2 * (1.5 * c_a1) + span1;
     return totalWidth * h_eff;
@@ -237,73 +179,67 @@ function calculateAvc(inputs) {
 function updateAreaInputs(inputs) {
   const ancInput = document.getElementById("anc_value");
   const avcInput = document.getElementById("avc_value");
-
   if (inputs.manual_anc === "No") {
     ancInput.readOnly = true;
     const calcAnc = calculateAnc(inputs);
     ancInput.value = calcAnc.toFixed(2);
     inputs.anc_value = calcAnc;
-  } else {
-    ancInput.readOnly = false;
-  }
-
+  } else { ancInput.readOnly = false; }
   if (inputs.manual_avc === "No") {
     avcInput.readOnly = true;
     const calcAvc = calculateAvc(inputs);
     avcInput.value = calcAvc.toFixed(2);
     inputs.avc_value = calcAvc;
-  } else {
-    avcInput.readOnly = false;
-  }
+  } else { avcInput.readOnly = false; }
 }
 
-function drawSideView(inputs) {
-  const { hef, ha, ca1_t, ca3_t, n_tension, s_direction, s1_t } = inputs;
-  const W = 640, H = 380, margin = 70;
-  
+// =================================================================
+//                 --- DRAWING FUNCTIONS ---
+// =================================================================
+
+function drawSideView(inputs, scale) {
+  const { hef, ha, ca1_t, ca3_t, n_tension, s_direction, s1_t, reinf_tension } = inputs;
+  const W = 640, margin = 70;
   const parts = [];
   
   const numBoltsInRow = (n_tension === 1) ? 1 : (n_tension === 2 && s_direction === 's1') ? 2 : (n_tension === 4) ? 2 : 1;
   const span = (numBoltsInRow > 1) ? s1_t : 0;
-
   const memberW = ca1_t + span + ca3_t;
-  const scale = Math.min((W - 2 * margin) / (memberW || 1), (H - 2 * margin) / (Math.max(ha, hef + 10) || 1));
+  
   const px = (x) => margin + x * scale;
   const py = (y) => margin + y * scale;
-
+  
+  // Dynamic scaling height ensuring enough space for deep break cones
+  const maxDepth = Math.max(ha, hef + 5);
+  const H = margin * 2 + maxDepth * scale;
+  
   const clipId = "concrete-clip-side";
-  const clipPathSvg = tag("clipPath", { id: clipId }, 
-    tag("rect", { x: px(0), y: py(0), width: memberW * scale, height: ha * scale })
-  );
-  parts.push(tag("defs", {}, clipPathSvg));
-
+  parts.push(tag("defs", {}, tag("clipPath", { id: clipId }, tag("rect", { x: px(0), y: py(0), width: memberW * scale, height: ha * scale }))));
   parts.push(tag("rect", { x: px(0), y: py(0), width: memberW * scale, height: ha * scale, fill: "#e6e6e6", stroke: "#000", "stroke-width": 1.5 }));
   
   if (n_tension > 0) {
     const breakout = 1.5 * hef;
-    const anchorXs = [];
-    if (numBoltsInRow === 1) {
-        anchorXs.push(ca1_t);
-    } else {
-        for (let i = 0; i < numBoltsInRow; i++) {
-            anchorXs.push(ca1_t + i * s1_t);
-        }
+    const anchorXs = (numBoltsInRow === 1) ? [ca1_t] : Array.from({ length: numBoltsInRow }, (_, i) => ca1_t + i * s1_t);
+    
+    // Tension reinforcement straight vertical bars
+    if (reinf_tension === 'Yes' && anchorXs.length > 0) {
+        const rebarX1 = px(anchorXs[0]) - 20;
+        const rebarX2 = px(anchorXs[anchorXs.length - 1]) + 20;
+        const rebarY1 = py(0) + 20;
+        const rebarY2 = py(ha) - 20;
+        parts.push(line(rebarX1, rebarY1, rebarX1, rebarY2, { stroke: "black", "stroke-width": 2 }));
+        parts.push(line(rebarX2, rebarY1, rebarX2, rebarY2, { stroke: "black", "stroke-width": 2 }));
     }
 
-    const coneGroupParts = [];
-    anchorXs.forEach((ax) => {
-        const left = ax - breakout, right = ax + breakout;
-        coneGroupParts.push(tag("polygon", {
-        points: `${px(ax)},${py(hef)} ${px(left)},${py(0)} ${px(right)},${py(0)}`,
-        fill: "#bfbfbf", "fill-opacity": 0.6, stroke: "#000", "stroke-width": 1, "stroke-dasharray": "4,3",
-        }));
-    });
-    parts.push(tag("g", { "clip-path": `url(#${clipId})` }, coneGroupParts.join("")));
+    const coneGroupParts = anchorXs.map(ax => tag("polygon", {
+        points: `${px(ax)},${py(hef)} ${px(ax - breakout)},${py(0)} ${px(ax + breakout)},${py(0)}`,
+        class: 'breakout-cone-tension'
+    })).join("");
+    parts.push(tag("g", { "clip-path": `url(#${clipId})` }, coneGroupParts));
 
-    anchorXs.forEach((ax) => {
+    anchorXs.forEach(ax => {
         parts.push(line(px(ax), py(0), px(ax), py(hef), { "stroke-width": 4 }));
         parts.push(tag("rect", { x: px(ax) - 6, y: py(0) - 3, width: 12, height: 3, fill: "#000" }));
-
         const topY = py(0) - 26;
         parts.push(line(px(ax), py(0) - 2, px(ax), topY, { "stroke-width": 1.5 }));
         parts.push(tag("polygon", { points: `${px(ax) - 4},${topY + 8} ${px(ax) + 4},${topY + 8} ${px(ax)},${topY}`, fill: "#000" }));
@@ -313,7 +249,6 @@ function drawSideView(inputs) {
     const dimY = py(0) - 46;
     parts.push(line(px(0), dimY, px(ca1_t), dimY));
     parts.push(text(px(ca1_t) / 2, dimY - 5, `ca1=${ca1_t.toFixed(1)}"`));
-
     if (span > 0) {
         const dimY2 = py(0) - 60;
         parts.push(line(px(ca1_t), dimY2, px(ca1_t + span), dimY2));
@@ -326,79 +261,115 @@ function drawSideView(inputs) {
   parts.push(line(dimX1 - 4, py(0), dimX1 + 4, py(0), { stroke: "#000" }));
   parts.push(line(dimX1 - 4, py(hef), dimX1 + 4, py(hef), { stroke: "#000" }));
   parts.push(text(dimX1 + 16, (py(0) + py(hef)) / 2, `hef=${hef.toFixed(1)}"`, { "text-anchor": "middle", transform: `rotate(90 ${dimX1 + 16} ${(py(0) + py(hef)) / 2})` }));
-
   const dimX2 = px(memberW) + 55;
   parts.push(line(dimX2, py(0), dimX2, py(ha), { stroke: "#000" }));
   parts.push(line(dimX2 - 4, py(0), dimX2 + 4, py(0), { stroke: "#000" }));
   parts.push(line(dimX2 - 4, py(ha), dimX2 + 4, py(ha), { stroke: "#000" }));
   parts.push(text(dimX2 + 16, (py(0) + py(ha)) / 2, `ha=${ha.toFixed(1)}"`, { "text-anchor": "middle", transform: `rotate(90 ${dimX2 + 16} ${(py(0) + py(ha)) / 2})` }));
-
-  return { svg: tag("svg", { viewBox: `0 0 ${W + 40} ${H}`, xmlns: "http://www.w3.org/2000/svg" }, parts.join("")) };
+  
+  // Height Auto scaling injected here
+  return { svg: tag("svg", { viewBox: `0 0 680 ${H}`, style: "max-height: none; height: auto;", xmlns: "http://www.w3.org/2000/svg" }, parts.join("")) };
 }
 
-function drawTopView(inputs) {
-  const { ca1_t, ca2_t, ca3_t, ca4_t, s1_t, s2_t, n_tension, s_direction, shear_dir, ca1_v } = inputs;
-  const W = 640, H = 380, margin = 70;
-
+function drawTopView(inputs, scale) {
+  const { ca1_t, ca2_t, ca3_t, ca4_t, s1_t, s2_t, n_tension, s_direction, shear_dir, reinf_shear, ca1_v } = inputs;
+  const W = 640, margin = 70;
   const anchorPos = getAnchorPositions(n_tension, s_direction, s1_t, s2_t, ca1_t, ca2_t);
-
   const spanX = (n_tension === 2 && s_direction === 's1') || n_tension === 4 ? s1_t : 0;
   const spanY = (n_tension === 2 && s_direction === 's2') || n_tension === 4 ? s2_t : 0;
   const memberW = ca1_t + ca3_t + spanX;
   const memberD = ca2_t + ca4_t + spanY;
-
-  const scale = Math.min((W - 2 * margin) / (memberW || 1), (H - 2 * margin) / (memberD || 1));
+  
   const renderW = memberW * scale;
   const renderH = memberD * scale;
-  const offsetX = margin + (W - 2 * margin - renderW) / 2;
-  const offsetY = margin + (H - 2 * margin - renderH) / 2;
-
-  const px = (x) => offsetX + x * scale;
-  const py = (y) => offsetY + y * scale;
-
+  const px = (x) => margin + x * scale;
+  const py = (y) => margin + y * scale;
+  const H = margin * 2 + memberD * scale;
+  
   const parts = [];
-  parts.push(tag("rect", { x: px(0), y: py(0), width: renderW, height: renderH, fill: "#e6e6e6", stroke: "#000", "stroke-width": 1.5 }));
+  
+  parts.push(tag("rect", { x: px(0), y: py(0), width: renderW, height: renderH, fill: "var(--grey-light)", stroke: "#000", "stroke-width": 1.5 }));
+  
+  if (anchorPos.length > 0 && inputs.n_shear > 0) {
+      if (shear_dir === 'perpendicular to edge') {
+        const backY = py(ca2_t + spanY + 1.5 * ca1_v);
+        const backLeftX = px(ca1_t - 1.5 * ca1_v);
+        const backRightX = px(ca1_t + spanX + 1.5 * ca1_v);
+        
+      }
+  }
 
-  const breakoutR = 1.5 * ca1_v;
+  // Shear rebar hook - wrapping the anchors 
+  if (reinf_shear === 'Yes' && anchorPos.length > 0) {
+      const hookOffset = 15;
+      const legLength = 100;
+      const bendRadius = 8;
+      
+      if (shear_dir === 'perpendicular to edge') {
+          // Wrapped around the left side (front), legs extending right
+          const leftX = px(ca1_t) - hookOffset;
+          const rightX = px(ca1_t + spanX) + legLength;
+          const topY = py(ca2_t) - hookOffset;
+          const botY = py(ca2_t + spanY) + hookOffset;
+          
+          const pathData = `M ${rightX},${topY} 
+                            L ${leftX + bendRadius},${topY}
+                            A ${bendRadius},${bendRadius} 0 0 0 ${leftX},${topY + bendRadius}
+                            L ${leftX},${botY - bendRadius}
+                            A ${bendRadius},${bendRadius} 0 0 0 ${leftX + bendRadius},${botY}
+                            L ${rightX},${botY}`;
+          parts.push(tag('path', { d: pathData, stroke: "black", "stroke-width": 2, fill: "none" }));
+      } else {
+          // Wrapped around the top side, legs extending down
+          const topY = py(ca2_t) - hookOffset;
+          const botY = py(ca2_t + spanY) + legLength;
+          const leftX = px(ca1_t) - hookOffset;
+          const rightX = px(ca1_t + spanX) + hookOffset;
+          
+          const pathData = `M ${leftX},${botY}
+                            L ${leftX},${topY + bendRadius}
+                            A ${bendRadius},${bendRadius} 0 0 1 ${leftX + bendRadius},${topY}
+                            L ${rightX - bendRadius},${topY}
+                            A ${bendRadius},${bendRadius} 0 0 1 ${rightX},${topY + bendRadius}
+                            L ${rightX},${botY}`;
+          parts.push(tag('path', { d: pathData, stroke: "black", "stroke-width": 2, fill: "none" }));
+      }
+  }
 
   anchorPos.forEach(([ax, ay]) => {
-    parts.push(tag("circle", { cx: px(ax), cy: py(ay), r: breakoutR * scale, fill: "none", stroke: "#999", "stroke-dasharray": "4,3" }));
     parts.push(tag("circle", { cx: px(ax), cy: py(ay), r: 7, fill: "none", stroke: "#000", "stroke-width": 1.5 }));
     parts.push(tag("circle", { cx: px(ax), cy: py(ay), r: 2.2, fill: "#000" }));
   });
 
   if (anchorPos.length > 0) {
       const [ax0, ay0] = anchorPos[0];
-      if (shear_dir === "perpendicular to edge") {
-          const y = py(ay0);
-          parts.push(line(px(0) - 24, y, px(ax0) - 9, y, { "stroke-width": 1.5 }));
-          parts.push(tag("polygon", { points: `${px(ax0) - 18},${y - 4} ${px(ax0) - 18},${y + 4} ${px(ax0) - 8},${y}`, fill: "#000" }));
-          parts.push(text(px(0) - 24, y - 8, "Vu", { "text-anchor": "start" }));
-      } else {
-          const x = px(ax0);
-          parts.push(line(x, py(0) - 24, x, py(ay0) - 9, { "stroke-width": 1.5 }));
-          parts.push(tag("polygon", { points: `${x - 4},${py(ay0) - 18} ${x + 4},${py(ay0) - 18} ${x},${py(ay0) - 8}`, fill: "#000" }));
-          parts.push(text(x + 12, py(0) - 24, "Vu", { "text-anchor": "start" }));
+      if (inputs.n_shear > 0) {
+          if (shear_dir === "perpendicular to edge") {
+              const y = py(ay0);
+              parts.push(line(px(ax0) - 9, y, px(0) - 24, y, { "stroke-width": 2, stroke: 'var(--black)' }));
+              parts.push(tag("polygon", { points: `${px(0) - 15},${y - 4} ${px(0) - 15},${y + 4} ${px(0) - 25},${y}`, fill: 'var(--black)' }));
+              parts.push(text(px(0) - 32, y - 8, "Vu", { "text-anchor": "end", fill: 'var(--black)' }));
+          } else { 
+              const x = px(ax0);
+              parts.push(line(x, py(ay0) - 9, x, py(0) - 24, { "stroke-width": 2, stroke: 'var(--black)' }));
+              parts.push(tag("polygon", { points: `${x-4},${py(0)-15} ${x+4},${py(0)-15} ${x},${py(0)-25}`, fill: 'var(--black)' }));
+              parts.push(text(x + 8, py(0) - 24, "Vu", { "text-anchor": "start", fill: 'var(--black)' }));
+          }
       }
-
       const dimTopY = py(0) - 14;
       parts.push(line(px(0), dimTopY, px(ax0), dimTopY));
       parts.push(text(px(ax0 / 2), dimTopY - 5, `ca1=${ca1_t.toFixed(1)}"`));
-
       const lastAx = px(ca1_t + spanX);
       const dimBotY = py(memberD) + 22;
       parts.push(line(lastAx, dimBotY, px(memberW), dimBotY));
       parts.push(text((lastAx + px(memberW)) / 2, dimBotY + 12, `ca3=${ca3_t.toFixed(1)}"`));
-      
       const dimLeftX = px(0) - 14;
       parts.push(line(dimLeftX, py(0), dimLeftX, py(ay0)));
       parts.push(text(dimLeftX - 20, py(ay0 / 2), `ca2=${ca2_t.toFixed(1)}"`, { transform: `rotate(-90 ${dimLeftX - 20} ${py(ay0/2)})` }));
-
       const lastAy = py(ca2_t + spanY);
       const dimRightX = px(memberW) + 22;
       parts.push(line(dimRightX, lastAy, dimRightX, py(memberD)));
       parts.push(text(dimRightX + 20, (lastAy + py(memberD)) / 2, `ca4=${ca4_t.toFixed(1)}"`, { transform: `rotate(-90 ${dimRightX + 20} ${(lastAy + py(memberD)) / 2})` }));
-
       if (spanX > 0) {
         const y = py(ca2_t + spanY) + 22;
         parts.push(line(px(ca1_t), y, px(ca1_t + spanX), y));
@@ -410,366 +381,225 @@ function drawTopView(inputs) {
         parts.push(text(x - 16, py(ca2_t + spanY / 2), `s2=${spanY.toFixed(1)}"`, { transform: `rotate(-90 ${x - 16} ${py(ca2_t + spanY / 2)})` }));
       }
   }
-
-  return { svg: tag("svg", { viewBox: `0 0 ${W + 40} ${H}`, xmlns: "http://www.w3.org/2000/svg" }, parts.join("")) };
+  
+  // Height Auto scaling injected here
+  return { svg: tag("svg", { viewBox: `0 0 680 ${H}`, style: "max-height: none; height: auto;", xmlns: "http://www.w3.org/2000/svg" }, parts.join("")) };
 }
 
-// ---------------------------------------------------------------
-// Full ACI 318-19 & PIP STE05121 Engineering Calculation Engine
-// ---------------------------------------------------------------
-function calculateResults(inputs) {
-  const {
-    n_ua, v_ua, shear_dir, grout_pad, ductility_req, seismic_cat, f_c,
-    cracking_factor, psi_m_n, reinf_tension, reinf_shear, supp_reinf_tension, supp_reinf_shear,
-    anchor_material, diameter, hef, ha, n_tension, n_shear,
-    anc_value, avc_value, e_n, e_v, ca1_t, ca2_t, ca3_t, ca4_t, s1_t, s2_t, ca1_v, ca2_v, s1_v, s2_v
-  } = inputs;
 
+// =================================================================
+//                 --- CALCULATION ENGINE ---
+// =================================================================
+
+function calculateResults(inputs) {
+  const { n_ua, v_ua, shear_dir, grout_pad, ductility_req, seismic_cat, f_c, cracking_factor, psi_m_n, reinf_tension, reinf_shear, supp_reinf_tension, supp_reinf_shear, anchor_material, diameter, hef, ha, n_tension, n_shear, anc_value, avc_value, e_n, e_v, ca1_t, ca2_t, ca3_t, ca4_t, s1_t, s2_t, ca1_v, ca2_v, s1_v, s2_v, consider_plate, nut_dia, plate_dia, plate_thick } = inputs;
+  const breakdown = {}; 
+  const isSeismic = (seismic_cat !== "A, B") || (ductility_req === "Yes");
   const bolt = BOLT_PROPS[diameter] || BOLT_PROPS["2"];
   const mat = getMaterialProperties(anchor_material, diameter);
-
-  const ase = bolt.ase;
-  const abrg = bolt.abrg;
-  const da = bolt.da;
+  const { ase, da } = bolt;
   const fya = mat.fya;
   const futa = Math.min(mat.futa, 125, 1.9 * fya);
+  let abrg = bolt.abrg;
 
-  // Strength Reduction Factors (phi) per PIP Table / ACI 318-19 17.5.3
-  const phi_steel_N = 0.75;
-  const phi_steel_V = 0.65;
-  const phi_conc_N = (supp_reinf_tension === "Yes") ? 0.75 : 0.70; 
-  const phi_conc_V = (supp_reinf_shear === "Yes") ? 0.75 : 0.70;
-
-  // ---------------- TENSION CALCULATIONS ----------------
+  const phi_steel_N = 0.75, phi_steel_V = 0.65;
+  const phi_conc_N = (reinf_tension === "Yes" || supp_reinf_tension === "Yes") ? 0.75 : 0.70;
+  const phi_conc_V = (reinf_shear === "Yes" || supp_reinf_shear === "Yes") ? 0.75 : 0.70;
+  breakdown.phi = { phi_steel_N, phi_steel_V, phi_conc_N, phi_conc_V };
+  
   let phiNn = Infinity;
-  let breakdown_N = {};
-
   if (n_tension > 0) {
-      // 1. Steel Strength in Tension (17.6.1.2)
-      const Nsa_single = ase * futa;
-      let Nsa_tot = Nsa_single * n_tension;
-      // Note: Eccentricity formula might need refinement for 4-anchor groups
-      if (e_n > 0 && n_tension > 1) {
-          const s_perp = (inputs.s_direction === "s1") ? s1_t : s2_t;
-          if (s_perp > 0) {
-          Nsa_tot = (2 * s_perp / (s_perp + 2 * e_n)) * Nsa_tot;
-          }
-      }
-
-      // 2. Concrete Breakout Strength in Tension (17.6.2)
+      const Nsa_tot = (ase * futa) * n_tension;
+      breakdown.Nsa = { ase, futa, n_tension, Nsa_tot, phi_Nsa: phi_steel_N * Nsa_tot };
       const Anco = 9 * hef * hef;
-      const psi_ec_N = Math.min(1.0 / (1.0 + e_n / (1.5 * hef)), 1.0);
+      const psi_ec_N = 1 / (1 + e_n / (1.5 * hef));
       const ca_min = Math.min(ca1_t, ca2_t, ca3_t, ca4_t);
-      const psi_ed_N = (ca_min >= 1.5 * hef) ? 1.0 : Math.min(0.7 + 0.3 * (ca_min / (1.5 * hef)), 1.0);
-      const psi_c_N = 1.0; 
-      const psi_cp_N = (ca_min >= 1.5 * hef) ? 1.0 : Math.max(ca_min / (1.5 * hef), 1 / n_tension);
-      const Nb = 24 * Math.sqrt(f_c) * Math.pow(hef, 1.5) / 1000.0; // kips
-      const Ncb_tot = (anc_value / Math.max(Anco, 0.1)) * psi_ec_N * psi_ed_N * psi_c_N * psi_cp_N * psi_m_n * Nb;
-
-      // 3. Pullout Strength in Tension (17.6.3)
-      const Np = 8 * abrg * f_c / 1000.0; // kips
-      const psi_c_P = 1.0;
-      const Npn_tot = psi_c_P * Np * n_tension;
-
-      // 4. Side-Face Blowout Strength in Tension (17.6.4)
-      let Nsb_tot = Infinity;
-      if (hef > 2.5 * ca_min) {
-          const Nsb_single = 160 * ca1_t * Math.sqrt(abrg) * Math.sqrt(f_c) / 1000.0;
-          Nsb_tot = Nsb_single * n_tension; // Simplified for group
+      const psi_ed_N = (ca_min < 1.5 * hef) ? 0.7 + 0.3 * (ca_min / (1.5 * hef)) : 1.0;
+      const Nb = 24 * 1.0 * Math.sqrt(f_c) * hef ** 1.5 / 1000.0;
+      const Ncb_tot = (anc_value / Anco) * psi_ec_N * psi_ed_N * 1.0 * ((ca_min < 1.5 * hef) ? Math.max(ca_min / (1.5 * hef), 1 / n_tension) : 1.0) * psi_m_n * Nb;
+      const seismic_factor_N = isSeismic ? 0.75 : 1.0;
+      breakdown.Ncb = { anc_value, Anco, psi_ec_N, psi_ed_N, psi_m_n, Nb, Ncb_tot, phi_Ncb: phi_conc_N * Ncb_tot * seismic_factor_N, e_n, hef, ca_min, f_c, seismic_factor_N };
+      let plate_calcs = {};
+      if (consider_plate === "Yes") {
+          const abolt = (Math.PI / 4) * (da ** 2), d_plate_gross = Math.min(nut_dia + 2 * plate_thick, plate_dia), a_plate_gross = (Math.PI / 4) * (d_plate_gross ** 2);
+          abrg = a_plate_gross - abolt;
+          plate_calcs = { abolt, d_plate_gross, a_plate_gross };
       }
-
-      // Seismic Reduction Factor
-      const isSeismic = (seismic_cat === "C, D, E, or F") || (ductility_req === "Yes");
-      const seismic_factor = isSeismic ? 0.75 : 1.0;
-
-      // Factored Design Capacities
-      const phi_Nsa = phi_steel_N * Nsa_tot;
-      const phi_Ncb = phi_conc_N * Ncb_tot * seismic_factor;
-      const phi_Npn = phi_conc_N * Npn_tot * seismic_factor;
-      const phi_Nsb = (Nsb_tot !== Infinity) ? phi_conc_N * Nsb_tot * seismic_factor : Infinity;
-
-      let gov_conc_mode_N = "N/A";
-      const concrete_capacities = [
-          { mode: "Pullout Strength", value: phi_Npn },
-          { mode: "Side-Face Blowout", value: phi_Nsb }
-      ];
-
-      if (reinf_tension === "Yes") {
-          gov_conc_mode_N = "Reinf. replaces breakout";
-          phiNn = Math.min(phi_Nsa, phi_Npn, phi_Nsb);
-      } else {
-          concrete_capacities.push({ mode: "Concrete Breakout", value: phi_Ncb });
-          const min_concrete = concrete_capacities.reduce((min, cur) => cur.value < min.value ? cur : min);
-          gov_conc_mode_N = min_concrete.mode;
-          phiNn = Math.min(phi_Nsa, min_concrete.value);
+      const Npn_tot = (8 * abrg * f_c / 1000.0) * n_tension * 1.0;
+      breakdown.Npn = { abrg, f_c, Np: Npn_tot/n_tension, n_tension, Npn_tot, phi_Npn: phi_conc_N * Npn_tot * seismic_factor_N, abrg_orig: bolt.abrg, plate_calcs };
+      let Nsb_tot = 1e9; 
+      const Nsb_applies = hef > 2.5 * ca1_t;
+      if (Nsb_applies) {
+          Nsb_tot = (160 * ca1_t * Math.sqrt(abrg) * Math.sqrt(f_c) / 1000.0) * n_tension;
       }
+      const phi_Nsb = Nsb_applies ? phi_conc_N * Nsb_tot * seismic_factor_N : 1e9;
+      breakdown.Nsb = { Nsb_applies, ca1_t, hef, abrg, f_c, Nsb_tot, phi_Nsb, seismic_factor_N };
 
-      // PIP Ductile Tension Check Calculation
-      // (This logic might need review for full compliance with multiple failure modes)
+      phiNn = Math.min(breakdown.Nsa.phi_Nsa, breakdown.Ncb.phi_Ncb, breakdown.Npn.phi_Npn, phi_Nsb);
+      let gov_conc_mode_N = (phiNn === breakdown.Nsa.phi_Nsa) ? "Steel" : (phiNn === breakdown.Ncb.phi_Ncb) ? "Concrete Breakout" : (phiNn === breakdown.Npn.phi_Npn) ? "Pullout" : "Side-Face Blowout";
+      if (reinf_tension === "Yes") { 
+          phiNn = Math.min(breakdown.Nsa.phi_Nsa, breakdown.Npn.phi_Npn, phi_Nsb); 
+          gov_conc_mode_N = (phiNn === breakdown.Nsa.phi_Nsa) ? "Steel" : (phiNn === breakdown.Npn.phi_Npn) ? "Pullout" : "Side-Face Blowout"; 
+      }
+      breakdown.gov_N = { phiNn, gov_conc_mode_N };
+
       const steel_ductility_cap = 1.2 * Nsa_tot;
-      const is_mat_ductile = mat.ductile;
-      const breakout_pass = Ncb_tot >= steel_ductility_cap;
-      const pullout_pass = Npn_tot >= steel_ductility_cap;
-      const blowout_pass = (Nsb_tot === Infinity) || (Nsb_tot >= steel_ductility_cap);
-      const reinf_tension_provided = (reinf_tension === "Yes");
-
-      let is_ductile_system = is_mat_ductile && (reinf_tension_provided || (breakout_pass && pullout_pass && blowout_pass));
       let ductility_reasons = [];
-      if (!is_mat_ductile) ductility_reasons.push("Material is non-ductile");
-      if (!reinf_tension_provided) {
-          if (!breakout_pass) ductility_reasons.push("Breakout < 1.2 Nsa");
-          if (!pullout_pass) ductility_reasons.push("Pullout < 1.2 Nsa");
-          if (Nsb_tot !== Infinity && !blowout_pass) ductility_reasons.push("Blowout < 1.2 Nsa");
+      if (!mat.ductile) ductility_reasons.push("Material is non-ductile");
+      if (reinf_tension !== "Yes") {
+          if (Ncb_tot < steel_ductility_cap) ductility_reasons.push("Concrete breakout is non-ductile");
+          if (Npn_tot < steel_ductility_cap) ductility_reasons.push("Pullout is non-ductile");
+          if (Nsb_applies && Nsb_tot < steel_ductility_cap) ductility_reasons.push("Side-face blowout is non-ductile");
       }
-
-      breakdown_N = {
-          phi_Nsa, phi_Ncb, phi_Npn, phi_Nsb, Nsa_tot, Ncb_tot, Npn_tot, Nsb_tot,
-          phi_steel_N, phi_conc_N, seismic_factor, gov_conc_mode_N,
-          ductilityText: is_ductile_system ? "Ductile" : `Non-Ductile (${ductility_reasons.join("; ") || "Failed"})`
-      };
-  } else {
-    phiNn = Infinity;
-    breakdown_N = { ductilityText: "N/A" };
+      breakdown.ductility = { is_ductile_system: mat.ductile && (reinf_tension === "Yes" || ductility_reasons.length === 0), ductility_reasons, steel_ductility_cap };
+  } else { 
+      breakdown.gov_N = { phiNn: 0, gov_conc_mode_N: 'N/A'};
+      breakdown.ductility = { is_ductile_system: true, ductility_reasons: [] };
   }
 
-  // ---------------- SHEAR CALCULATIONS ----------------
   let phiVn = Infinity;
-  let breakdown_V = {};
-
   if (n_shear > 0) {
-      // 1. Steel Strength in Shear (17.7.1)
-      const grout_reduction = (grout_pad === "Yes") ? 0.8 : 1.0;
-      const Vsa_single = 0.6 * ase * futa * grout_reduction;
-      let Vsa_tot = Vsa_single * n_shear;
-
-      // 2. Concrete Breakout Strength in Shear (17.7.2)
-      const ca1_used = ca1_v; // Simplified
-      const Avco = 4.5 * ca1_used * ca1_used;
+      const Vsa_tot = (0.6 * ase * futa * (grout_pad === "Yes" ? 0.8 : 1.0)) * n_shear;
+      breakdown.Vsa = { ase, futa, n_shear, grout_factor: (grout_pad === "Yes" ? 0.8 : 1.0), Vsa_tot, phi_Vsa: phi_steel_V * Vsa_tot };
       const le = Math.min(8 * da, hef);
-      const Vb = (7 * Math.pow(le / da, 0.2) * Math.sqrt(da) * Math.sqrt(f_c) * Math.pow(ca1_used, 1.5)) / 1000.0;
-      
-      const psi_ec_V = 1.0 / (1.0 + e_v / (1.5 * ca1_used));
-      const psi_ed_V = (shear_dir === "parallel to edge" || ca2_v >= 1.5 * ca1_used) ? 1.0 : (0.7 + 0.3 * (ca2_v / (1.5 * ca1_used)));
-      let psi_c_V_val = parseFloat(cracking_factor.split('_')[0]) || 1.2;
-      const psi_h_V = Math.sqrt(1.5 * ca1_used / ha);
-      let Vcb_tot = (avc_value / Math.max(Avco, 0.1)) * psi_ec_V * psi_ed_V * psi_c_V_val * psi_h_V * Vb;
-      if (shear_dir === "parallel to edge") Vcb_tot *= 2.0;
-
-      // 3. Concrete Pryout Strength in Shear (17.7.3)
+      const Vb = (7 * (le / da)**0.2 * Math.sqrt(da) * Math.sqrt(f_c) * ca1_v**1.5) / 1000;
+      const Avco = 4.5 * ca1_v**2;
+      const psi_ec_V = 1 / (1 + e_v / (1.5 * ca1_v));
+      const psi_ed_V = (ca2_v < 1.5 * ca1_v) ? 0.7 + 0.3 * (ca2_v / (1.5 * ca1_v)) : 1.0;
+      const psi_c_V_val = parseFloat(cracking_factor.split('_')[0]) || 1.0;
+      const psi_h_V = Math.sqrt(1.5 * ca1_v / ha);
+      const Vcb_tot = (avc_value / Avco) * psi_ec_V * psi_ed_V * psi_c_V_val * psi_h_V * Vb * (shear_dir === "parallel to edge" ? 2 : 1);
+      breakdown.Vcb = { avc_value, Avco, psi_ec_V, psi_ed_V, psi_c_V_val, psi_h_V, Vb, Vcb_tot, phi_Vcb: phi_conc_V * Vcb_tot, le, da, f_c, ca1_v, ca2_v, e_v, ha };
       const kcp = (hef < 2.5) ? 1.0 : 2.0;
-      const Vcp_tot = kcp * (breakdown_N.Ncb_tot || 0);
-
-      // Factored Shear Capacities
-      const phi_Vsa = phi_steel_V * Vsa_tot;
-      const phi_Vcb = phi_conc_V * Vcb_tot;
-      const phi_Vcp = phi_conc_V * Vcp_tot;
-
-      let gov_conc_mode_V = "N/A";
-      if (reinf_shear === "Yes") {
-          gov_conc_mode_V = "Pryout (Reinf for Breakout)";
-          phiVn = Math.min(phi_Vsa, phi_Vcp);
-      } else {
-          const min_concrete_shear = Math.min(phi_Vcb, phi_Vcp);
-          gov_conc_mode_V = (phi_Vcb <= phi_Vcp) ? "Concrete Breakout" : "Concrete Pryout";
-          phiVn = Math.min(phi_Vsa, min_concrete_shear);
-      }
-
-      breakdown_V = {
-          phi_Vsa, phi_Vcb, phi_Vcp, Vsa_tot, Vcb_tot, Vcp_tot,
-          phi_steel_V, phi_conc_V, gov_conc_mode_V
-      };
+      const Vcp_tot = kcp * (breakdown.Ncb?.Ncb_tot || 0);
+      breakdown.Vcp = { kcp, Ncb_val: breakdown.Ncb?.Ncb_tot || 0, Vcp_tot, phi_Vcp: phi_conc_V * Vcp_tot };
+      phiVn = Math.min(breakdown.Vsa.phi_Vsa, breakdown.Vcb.phi_Vcb, breakdown.Vcp.phi_Vcp);
+      let gov_conc_mode_V = (phiVn === breakdown.Vsa.phi_Vsa) ? "Steel" : (phiVn === breakdown.Vcb.phi_Vcb) ? "Concrete Breakout" : "Concrete Pryout";
+      if (reinf_shear === "Yes") { phiVn = Math.min(breakdown.Vsa.phi_Vsa, breakdown.Vcp.phi_Vcp); gov_conc_mode_V = (phiVn === breakdown.Vsa.phi_Vsa) ? "Steel" : "Concrete Pryout"; }
+      breakdown.gov_V = { phiVn, gov_conc_mode_V };
   } else {
-    phiVn = Infinity;
+      breakdown.gov_V = { phiVn: 0, gov_conc_mode_V: 'N/A' };
   }
   
-  // ---------------- INTERACTION ----------------
-  const ratioN = (n_ua > 0 && phiNn > 0) ? n_ua / phiNn : 0;
-  const ratioV = (v_ua > 0 && phiVn > 0) ? v_ua / phiVn : 0;
-
-  let interaction = ratioN + ratioV;
-  let eqUsed = "Combined Ratio (N/phiNn + V/phiVn <= 1.0)";
-  if (ratioN === 0 && ratioV === 0) {
-      interaction = 0;
-      eqUsed = "No Load or No Anchors";
+  const ratioN = (n_ua > 0 && isFinite(phiNn) && phiNn > 0) ? n_ua / phiNn : 0;
+  const ratioV = (v_ua > 0 && isFinite(phiVn) && phiVn > 0) ? v_ua / phiVn : 0;
+  const isCombined = n_ua > 0 && v_ua > 0;
+  let interaction = ratioN + ratioV, eqUsed = "N/A", limit = 1.0;
+  if(isCombined) {
+      limit = 1.2;
+      eqUsed = "Eq. 17.8.3: (N/phiNn + V/phiVn)";
+      if (breakdown.gov_N.gov_conc_mode_N === 'Steel' || breakdown.gov_V.gov_conc_mode_V === 'Steel') {
+        eqUsed = "Eq. 17.8.2: (N/phiNn + V/phiVn)";
+        limit = 1.2;
+      }
   }
-  let pass = interaction <= 1.0;
-
-  return {
-    ductilityText: breakdown_N.ductilityText || 'N/A',
-    phiNn: isFinite(phiNn) ? phiNn : 0,
-    phiVn: isFinite(phiVn) ? phiVn : 0,
-    interaction: isNaN(interaction) ? 0 : interaction,
-    eqUsed,
-    pass,
-    breakdown: { ...breakdown_N, ...breakdown_V }
-  };
+  const pass = interaction <= limit;
+  breakdown.interaction = { ratioN, ratioV, interaction, eqUsed, pass, isCombined, limit };
+  
+  const ductilityText = breakdown.ductility.is_ductile_system ? "Ductile" : `Non-Ductile (${breakdown.ductility.ductility_reasons.length > 0 ? breakdown.ductility.ductility_reasons[0].slice(0,25) : '...'})`;
+  return { ductilityText, plateEffectText: consider_plate === "Yes" ? "Considered" : "Not Considered", phiNn: isFinite(phiNn) ? phiNn : 0, phiVn: isFinite(phiVn) ? phiVn : 0, interaction: isNaN(interaction) ? 0 : interaction, eqUsed, pass, breakdown };
 }
 
-// ---------------------------------------------------------------
-// App Controller
-// ---------------------------------------------------------------
 function refresh() {
   const inputs = readInputs();
-  
   updateSpacingInputs(inputs);
   updateAreaInputs(inputs);
-
-  const side = drawSideView(inputs);
+  
+  // -- Unified Scale based exclusively on standard physical member width --
+  const W = 450, margin = 70;
+  const numBoltsInRow = (inputs.n_tension === 1) ? 1 : (inputs.n_tension === 2 && inputs.s_direction === 's1') ? 2 : (inputs.n_tension === 4) ? 2 : 1;
+  const spanT = (numBoltsInRow > 1) ? inputs.s1_t : 0;
+  const memberW = inputs.ca1_t + spanT + inputs.ca3_t;
+  
+  const scale = (W - 2 * margin) / (memberW || 1); 
+  
+  const side = drawSideView(inputs, scale);
   document.getElementById("side-view").innerHTML = side.svg;
-
-  const top = drawTopView(inputs);
+  const top = drawTopView(inputs, scale);
   document.getElementById("top-view").innerHTML = top.svg;
-
+  
   const results = calculateResults(inputs);
-
+  
+  localStorage.setItem("anchorCalcData", JSON.stringify({ inputs, results }));
+  
   document.getElementById("res-ductility").textContent = results.ductilityText;
+  document.getElementById("res-plate-effect").textContent = results.plateEffectText;
   document.getElementById("res-nn").textContent = `${results.phiNn.toFixed(1)} kips`;
   document.getElementById("res-nua").textContent = `${inputs.n_ua.toFixed(1)} kips`;
   document.getElementById("res-vn").textContent = `${results.phiVn.toFixed(1)} kips`;
   document.getElementById("res-vua").textContent = `${inputs.v_ua.toFixed(1)} kips`;
-  document.getElementById("res-interaction").textContent = `${results.interaction.toFixed(2)} (${results.eqUsed})`;
-
+  document.getElementById("res-interaction").textContent = `${results.interaction.toFixed(2)}`;
   const statusBox = document.getElementById("status-box");
-  const statusText = document.getElementById("status-text");
   statusBox.className = `status-box ${results.pass ? "good" : "bad"}`;
-  statusText.textContent = results.pass ? "PASS" : "FAIL / OVERLOAD";
-
-  // Render Detailed Capacity Breakdown
+  document.getElementById("status-text").textContent = results.pass ? "PASS" : "FAIL / OVERLOAD";
+  
   const bd = results.breakdown;
   const breakdownEl = document.getElementById("capacity-breakdown");
-  if (breakdownEl) {
-    const seismicStr = bd.seismic_factor === 0.75 ? ` &times; Seismic (0.75)` : "";
-    
-    let tensionHTML = '<strong>Tension Capacities (&phi;N<sub>n</sub>):</strong><ul style="line-height: 1.6;">';
-    if (inputs.n_tension > 0) {
-      tensionHTML += `
-        <li>Steel: ${bd.Nsa_tot.toFixed(1)} &times; &phi;(${bd.phi_steel_N}) = <strong>${bd.phi_Nsa.toFixed(1)} kips</strong></li>
-        <li>Breakout: ${bd.Ncb_tot.toFixed(1)} &times; &phi;(${bd.phi_conc_N})${seismicStr} = <strong>${bd.phi_Ncb.toFixed(1)} kips</strong></li>
-        <li>Pullout: ${bd.Npn_tot.toFixed(1)} &times; &phi;(${bd.phi_conc_N})${seismicStr} = <strong>${bd.phi_Npn.toFixed(1)} kips</strong></li>
-        ${isFinite(bd.Nsb_tot) ? `<li>Side-Face: ${bd.Nsb_tot.toFixed(1)} &times; &phi;(${bd.phi_conc_N})${seismicStr} = <strong>${bd.phi_Nsb.toFixed(1)} kips</strong></li>` : ''}
-      `;
-    } else {
-        tensionHTML += '<li>N/A (0 anchors)</li>';
-    }
-    tensionHTML += `</ul><div style="font-size: 0.9em; color: #444; margin-top: 5px;"><em>Gov. Concrete: ${bd.gov_conc_mode_N || 'N/A'}</em></div>`;
-
-    let shearHTML = '<strong>Shear Capacities (&phi;V<sub>n</sub>):</strong><ul style="line-height: 1.6;">';
-    if (inputs.n_shear > 0) {
-      shearHTML += `
-        <li>Steel: ${bd.Vsa_tot.toFixed(1)} &times; &phi;(${bd.phi_steel_V}) = <strong>${bd.phi_Vsa.toFixed(1)} kips</strong></li>
-        <li>Breakout: ${bd.Vcb_tot.toFixed(1)} &times; &phi;(${bd.phi_conc_V}) = <strong>${bd.phi_Vcb.toFixed(1)} kips</strong></li>
-        <li>Pryout: ${bd.Vcp_tot.toFixed(1)} &times; &phi;(${bd.phi_conc_V}) = <strong>${bd.phi_Vcp.toFixed(1)} kips</strong></li>
-      `;
-    } else {
-        shearHTML += '<li>N/A (0 anchors)</li>';
-    }
-    shearHTML += `</ul><div style="font-size: 0.9em; color: #444; margin-top: 5px;"><em>Gov. Concrete: ${bd.gov_conc_mode_V || 'N/A'}</em></div>`;
-    
-    breakdownEl.innerHTML = `<div class="bd-group">${tensionHTML}</div><div class="bd-group" style="margin-top: 15px;">${shearHTML}</div>`;
+  if (breakdownEl && bd.gov_N && bd.gov_V) {
+      let tHTML = `<strong>Tension (&phi;N<sub>n</sub>):</strong><ul>`;
+      if(inputs.n_tension>0) tHTML += `<li>Steel: <strong>${bd.Nsa.phi_Nsa.toFixed(1)} kips</strong></li><li>Breakout: <strong>${bd.Ncb.phi_Ncb.toFixed(1)} kips</strong></li><li>Pullout: <strong>${bd.Npn.phi_Npn.toFixed(1)} kips</strong></li>` + (bd.Nsb.Nsb_applies ? `<li>Side-Face: <strong>${bd.Nsb.phi_Nsb.toFixed(1)} kips</strong></li>` : '');
+      else tHTML += `<li>N/A</li>`;
+      tHTML += `</ul><em>Gov: ${bd.gov_N.gov_conc_mode_N||'N/A'}</em>`;
+      let sHTML = `<strong>Shear (&phi;V<sub>n</sub>):</strong><ul>`;
+      if(inputs.n_shear>0) sHTML += `<li>Steel: <strong>${bd.Vsa.phi_Vsa.toFixed(1)} kips</strong></li><li>Breakout: <strong>${bd.Vcb.phi_Vcb.toFixed(1)} kips</strong></li><li>Pryout: <strong>${bd.Vcp.phi_Vcp.toFixed(1)} kips</strong></li>`;
+      else sHTML += `<li>N/A</li>`;
+      sHTML += `</ul><em>Gov: ${bd.gov_V.gov_conc_mode_V||'N/A'}</em>`;
+      breakdownEl.innerHTML = `<div class="bd-group">${tHTML}</div><div class="bd-group">${sHTML}</div>`;
   }
 }
 
-// ---------------------------------------------------------------
-// Local Storage and Event Listeners
-// ---------------------------------------------------------------
 function loadSavedInputs() {
   const savedData = localStorage.getItem("anchorAppInputs");
-  if (savedData) {
-    try {
-      const inputs = JSON.parse(savedData);
-      Object.keys(inputs).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = inputs[id];
-      });
-    } catch (e) { console.error("Failed to load saved inputs:", e); }
-  }
+  if (savedData) { try { const d = JSON.parse(savedData); Object.keys(d).forEach(id => { const el = document.getElementById(id); if (el) el.value = d[id]; }); } catch (e) { console.error(e); } }
 }
-
 function saveCurrentInputs() {
-  const inputs = {};
-  document.querySelectorAll("input, select").forEach(el => {
-    if (el.id) inputs[el.id] = el.value;
-  });
-  localStorage.setItem("anchorAppInputs", JSON.stringify(inputs));
+  const d = {};
+  document.querySelectorAll("input, select").forEach(el => { if (el.id) d[el.id] = el.value; });
+  localStorage.setItem("anchorAppInputs", JSON.stringify(d));
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    loadSavedInputs();
+  loadSavedInputs();
+  document.querySelectorAll("input, select").forEach((el) => {
+      const h = () => { refresh(); saveCurrentInputs(); };
+      el.addEventListener("input", h); el.addEventListener("change", h);
+  });
+  refresh();
 
-    document.querySelectorAll("input, select").forEach((el) => {
-        const handler = () => {
-            refresh();
-            saveCurrentInputs();
-        };
-        el.addEventListener("input", handler);
-        el.addEventListener("change", handler);
-    });
-
-    refresh(); // Run initial calculation
-
-    // --- RESIZABLE PANELS (DESKTOP) ---
-    // (Code from previous response, unchanged)
-    const root = document.documentElement;
-    const resizerLeft = document.getElementById("resizer-left");
-    const resizerRight = document.getElementById("resizer-right");
-
-    const savedInputWidth = localStorage.getItem("inputPanelWidth");
-    const savedResultsWidth = localStorage.getItem("resultsPanelWidth");
-    if (savedInputWidth) root.style.setProperty("--input-panel-width", savedInputWidth);
-    if (savedResultsWidth) root.style.setProperty("--results-panel-width", savedResultsWidth);
-
-    const createResizer = (resizerEl, propertyName) => {
-        let isResizing = false;
-        resizerEl.addEventListener("mousedown", (e) => {
-            isResizing = true;
-            document.body.style.cursor = "col-resize";
-            document.body.style.userSelect = "none";
-            e.preventDefault();
-        });
-        document.addEventListener("mousemove", (e) => {
-            if (!isResizing) return;
-            const sidePanel = propertyName === "--input-panel-width" ? resizerEl.previousElementSibling : resizerEl.nextElementSibling;
-            const newWidth = propertyName === "--input-panel-width" ? e.clientX - sidePanel.getBoundingClientRect().left : sidePanel.getBoundingClientRect().right - e.clientX;
-            if (newWidth > 150) {
-                root.style.setProperty(propertyName, `${newWidth}px`);
-            }
-        });
-        document.addEventListener("mouseup", () => {
-            if (isResizing) {
-                isResizing = false;
-                document.body.style.cursor = "default";
-                document.body.style.userSelect = "auto";
-                localStorage.setItem(propertyName.replace("--", ""), root.style.getPropertyValue(propertyName));
-            }
-        });
-    };
-    if (resizerLeft && resizerRight) {
-        createResizer(resizerLeft, "--input-panel-width");
-        createResizer(resizerRight, "--results-panel-width");
-    }
-
-    // --- MOBILE TAB NAVIGATION ---
-    // (Code from previous response, unchanged)
-    const mobileNav = document.querySelector(".mobile-nav");
-    const panels = document.querySelectorAll(".panel");
-    const showPanel = (panelId) => {
-        panels.forEach(p => p.classList.remove("active"));
-        document.querySelectorAll(".mobile-tab-btn").forEach(btn => btn.classList.remove("active"));
-        const panelToShow = document.getElementById(panelId);
-        const tabToActivate = document.querySelector(`.mobile-tab-btn[data-panel="${panelId}"]`);
-        if (panelToShow) panelToShow.classList.add("active");
-        if (tabToActivate) tabToActivate.classList.add("active");
-    };
-    if (mobileNav) {
-        mobileNav.addEventListener("click", (e) => {
-            if (e.target.matches(".mobile-tab-btn")) {
-                showPanel(e.target.dataset.panel);
-            }
-        });
-    }
-    if (window.innerWidth <= 860) {
-        showPanel("input-panel");
-    } else {
-        panels.forEach(p => p.classList.add("active"));
-    }
+  document.getElementById("show-calcs-btn").addEventListener("click", () => {
+    window.open('calcs.html', '_blank');
+  });
+  
+  const root = document.documentElement;
+  const rL = document.getElementById("resizer-left");
+  const rR = document.getElementById("resizer-right");
+  const sIW = localStorage.getItem("inputPanelWidth");
+  const sRW = localStorage.getItem("resultsPanelWidth");
+  if (sIW) root.style.setProperty("--input-panel-width", sIW);
+  if (sRW) root.style.setProperty("--results-panel-width", sRW);
+  const cR = (r, p) => {
+      if (!r) return;
+      let isR = false;
+      r.addEventListener("mousedown", (e) => { isR = true; document.body.style.cursor = "col-resize"; document.body.style.userSelect = "none"; e.preventDefault(); });
+      document.addEventListener("mousemove", (e) => {
+          if (!isR) return;
+          const sP = p === "--input-panel-width" ? r.previousElementSibling : r.nextElementSibling;
+          const nW = p === "--input-panel-width" ? e.clientX - sP.getBoundingClientRect().left : sP.getBoundingClientRect().right - e.clientX;
+          if (nW > 150) root.style.setProperty(p, `${nW}px`);
+      });
+      document.addEventListener("mouseup", () => {
+          if (isR) { isR = false; document.body.style.cursor = "default"; document.body.style.userSelect = "auto"; localStorage.setItem(p.replace("--", ""), root.style.getPropertyValue(p)); }
+      });
+  };
+  if (rL && rR) { cR(rL, "--input-panel-width"); cR(rR, "--results-panel-width"); }
+  const mN = document.querySelector(".mobile-nav"), pns = document.querySelectorAll(".panel");
+  const sP = (pId) => {
+      pns.forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".mobile-tab-btn").forEach(b => b.classList.remove("active"));
+      const pS = document.getElementById(pId), tA = document.querySelector(`.mobile-tab-btn[data-panel="${pId}"]`);
+      if (pS) pS.classList.add("active");
+      if (tA) tA.classList.add("active");
+  };
+  if (mN) { mN.addEventListener("click", (e) => { if (e.target.matches(".mobile-tab-btn")) sP(e.target.dataset.panel); }); }
+  if (window.innerWidth <= 860) { sP("input-panel"); } else { pns.forEach(p => p.classList.add("active")); }
 });

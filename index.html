@@ -165,6 +165,8 @@
         </div>
       </section>
 
+      
+
       <section class="input-group">
         <h2>Concrete Failure Areas</h2>
         <p class="note">Units for A<sub>Nc</sub> and A<sub>Vc</sub> are sq. in.</p>
@@ -226,6 +228,28 @@
         </div>
       </section>
 
+      <section class="input-group">
+        <h2>Advanced</h2>
+        <div class="field">
+          <label for="consider_plate">Consider the effect of anchor anchor bottom plate (Nut)?</label>
+          <select class="yellow" id="consider_plate"><option>Yes</option><option selected>No</option></select>
+        </div>
+        <div id="plate-inputs-group">
+          <div class="field">
+            <label for="nut_dia">Nut Diameter (in.)</label>
+            <input type="number" class="yellow" id="nut_dia" value="3" step="0.125">
+          </div>
+          <div class="field">
+            <label for="plate_dia">Bottom Plate Diameter, D (in.)</label>
+            <input type="number" class="yellow" id="plate_dia" value="7" step="0.5">
+          </div>
+          <div class="field">
+            <label for="plate_thick">Bottom Plate Thickness, t (in.)</label>
+            <input type="number" class="yellow" id="plate_thick" value="1.33" step="0.01">
+          </div>
+        </div>
+      </section>
+
       <p class="note disclaimer">Diagrams and summary update live. Result values are calculated per ACI 318-19 Chapter 17 & PIP STE05121.</p>
     </aside>
 
@@ -252,6 +276,11 @@
       <div class="result-row">
         <span class="result-label">Ductility</span>
         <span class="result-val" id="res-ductility">—</span>
+      </div>
+      
+      <div class="result-row">
+        <span class="result-label">Anchor Plate</span>  
+        <span class="result-val" id="res-plate-effect">—</span>
       </div>
 
       <div class="result-row">
@@ -285,6 +314,8 @@
         <h3>Detailed Capacity Breakdown</h3>
         <div id="capacity-breakdown"></div>
       </div>
+      
+      <button id="show-calcs-btn" class="show-calcs-btn">Show Detailed Calculation</button>
 
       <p class="note disclaimer">ACI 318-19 Chapter 17 design checks.</p>
     </aside>
