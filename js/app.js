@@ -248,7 +248,7 @@ function drawSideView(inputs, scale) {
 
     const dimY = py(0) - 46;
     parts.push(line(px(0), dimY, px(ca1_t), dimY));
-    parts.push(text(px(ca1_t) / 2, dimY - 5, `ca1=${ca1_t.toFixed(1)}"`));
+    parts.push(text(px(ca1_t / 2), dimY - 5, `ca1=${ca1_t.toFixed(1)}"`));
     if (span > 0) {
         const dimY2 = py(0) - 60;
         parts.push(line(px(ca1_t), dimY2, px(ca1_t + span), dimY2));
@@ -268,7 +268,9 @@ function drawSideView(inputs, scale) {
   parts.push(text(dimX2 + 16, (py(0) + py(ha)) / 2, `ha=${ha.toFixed(1)}"`, { "text-anchor": "middle", transform: `rotate(90 ${dimX2 + 16} ${(py(0) + py(ha)) / 2})` }));
   
   // Height Auto scaling injected here
-  return { svg: tag("svg", { viewBox: `0 0 680 ${H}`, style: "max-height: none; height: auto;", xmlns: "http://www.w3.org/2000/svg" }, parts.join("")) };
+  // Display only: shift the viewBox so the concrete member is horizontally centered.
+  const vbX = px(memberW / 2) - 340;
+  return { svg: tag("svg", { viewBox: `${vbX} 0 680 ${H}`, style: "max-height: none; height: auto;", xmlns: "http://www.w3.org/2000/svg" }, parts.join("")) };
 }
 
 function drawTopView(inputs, scale) {
@@ -383,7 +385,9 @@ function drawTopView(inputs, scale) {
   }
   
   // Height Auto scaling injected here
-  return { svg: tag("svg", { viewBox: `0 0 680 ${H}`, style: "max-height: none; height: auto;", xmlns: "http://www.w3.org/2000/svg" }, parts.join("")) };
+  // Display only: shift the viewBox so the concrete member is horizontally centered.
+  const vbX = px(memberW / 2) - 340;
+  return { svg: tag("svg", { viewBox: `${vbX} 0 680 ${H}`, style: "max-height: none; height: auto;", xmlns: "http://www.w3.org/2000/svg" }, parts.join("")) };
 }
 
 

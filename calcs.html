@@ -3,15 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detailed Anchor Bolt Calculations</title>
+    <title>Anchor Bolt Design — Calculation Report</title>
     <link rel="stylesheet" href="./css/calcs.css">
 </head>
 <body>
+    <div class="toolbar no-print">
+        <a class="toolbar-link" href="./index.html">&larr; Back to calculator</a>
+        <button type="button" class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+    </div>
+
     <div class="container">
         <header class="titlebar">
-            <span class="title-main">Detailed Anchor Bolt Calculations</span>
-            <span class="title-sub">Calculations per ACI 318-19 Chapter 17 & PIP STE05121</span>
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 3h12l-2 3H8z" />
+                        <path d="M12 6v12" />
+                        <path d="M9 9h6M9 12h6M9 15h6" />
+                        <path d="M8 18h8l-4 3z" />
+                    </svg>
+                </span>
+                <div class="brand-text">
+                    <span class="title-main">Anchor Bolt Design — Calculation Report</span>
+                    <span class="title-sub">Calculations per ACI 318-19 Chapter 17 &amp; PIP STE05121</span>
+                </div>
+            </div>
         </header>
+
+        <!-- Project information: editable on screen, prints as a filled-in title block -->
+        <section class="project-info" aria-label="Project information">
+            <label class="pi-field pi-wide"><span>Project</span><input type="text" data-pi="project" placeholder="Project name"></label>
+            <label class="pi-field"><span>Job No.</span><input type="text" data-pi="job" placeholder="—"></label>
+            <label class="pi-field pi-wide"><span>Item / Location</span><input type="text" data-pi="item" placeholder="e.g. Pump P-101 foundation"></label>
+            <label class="pi-field"><span>Date</span><input type="date" data-pi="date"></label>
+            <label class="pi-field"><span>Designed by</span><input type="text" data-pi="designer" placeholder="—"></label>
+            <label class="pi-field"><span>Checked by</span><input type="text" data-pi="checker" placeholder="—"></label>
+            <label class="pi-field"><span>Rev.</span><input type="text" data-pi="rev" placeholder="0"></label>
+            <label class="pi-field"><span>Sheet</span><input type="text" data-pi="sheet" placeholder="1 of 1"></label>
+        </section>
+
         <main id="detailed-calcs-content">
             <p class="note" style="text-align: center; margin-top: 40px;">Loading calculation data...</p>
         </main>
@@ -19,6 +49,28 @@
             <p>This is a computer-generated report. Always verify results with a qualified engineer.</p>
         </footer>
     </div>
+
+    <script>
+        // Report title block only: remembers project info between reports and
+        // defaults the date to today. Does not touch any calculation logic.
+        (function () {
+            var KEY = "anchorReportProjectInfo";
+            var saved = {};
+            try { saved = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { saved = {}; }
+            document.querySelectorAll("[data-pi]").forEach(function (el) {
+                var k = el.getAttribute("data-pi");
+                if (saved[k]) el.value = saved[k];
+                if (k === "date" && !el.value) {
+                    var d = new Date(), p = function (n) { return (n < 10 ? "0" : "") + n; };
+                    el.value = d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+                }
+                el.addEventListener("input", function () {
+                    saved[k] = el.value;
+                    try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) { /* storage unavailable */ }
+                });
+            });
+        })();
+    </script>
     <script src="./js/calcs.js"></script>
 </body>
 </html>
