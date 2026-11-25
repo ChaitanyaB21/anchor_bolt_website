@@ -1,5 +1,5 @@
 /**
- * Anchor Bolt Design (ACI 318-19 Chapter 17 & PIP STE05121)
+ * Anchor Bolt Design (ACI 318-14 / 318-19 Chapter 17 & PIP STE05121)
  */
 
 function tag(name, attrs, inner) {
@@ -69,6 +69,7 @@ function readInputs() {
   const val = (id) => document.getElementById(id).value;
 
   return {
+    code_edition: val("code_edition"), concrete_cracked: val("concrete_cracked"),
     n_ua: num("n_ua", 0), v_ua: num("v_ua", 0), shear_dir: val("shear_dir"), grout_pad: val("grout_pad"),
     ductility_req: val("ductility_req"), seismic_cat: val("seismic_cat"), f_c: num("f_c", 4500), cracking_factor: val("cracking_factor"),
     psi_m_n: num("psi_m_n", 1), reinf_tension: val("reinf_tension"), reinf_shear: val("reinf_shear"),
@@ -396,116 +397,170 @@ function drawTopView(inputs, scale) {
 // =================================================================
 
 function calculateResults(inputs) {
-  const { n_ua, v_ua, shear_dir, grout_pad, ductility_req, seismic_cat, f_c, cracking_factor, psi_m_n, reinf_tension, reinf_shear, supp_reinf_tension, supp_reinf_shear, anchor_material, diameter, hef, ha, n_tension, n_shear, anc_value, avc_value, e_n, e_v, ca1_t, ca2_t, ca3_t, ca4_t, s1_t, s2_t, ca1_v, ca2_v, s1_v, s2_v, consider_plate, nut_dia, plate_dia, plate_thick } = inputs;
-  const breakdown = {}; 
+  const { n_ua, v_ua, shear_dir, grout_pad, ductility_req, seismic_cat, f_c, cracking_factor, psi_m_n, reinf_tension, reinf_shear, supp_reinf_tension, supp_reinf_shear, anchor_material, diameter, hef, ha, n_tension, n_shear, anc_value, avc_value, e_n, e_v, ca1_t, ca2_t, ca3_t, ca4_t, s1_t, s2_t, ca1_v, ca2_v, s_direction, consider_plate, nut_dia, plate_dia, plate_thick } = inputs;
+  // Cast-in headed anchors: ACI 318-14 and 318-19 Chapter 17 use the same
+  // equations and factors here; the edition only changes clause references.
+  const code = getAciCode(inputs.code_edition);
+  const breakdown = { code_edition: inputs.code_edition in ACI_CODES ? inputs.code_edition : DEFAULT_ACI_CODE };
   const isSeismic = (seismic_cat !== "A, B") || (ductility_req === "Yes");
+  const seismic_factor_N = isSeismic ? 0.75 : 1.0; // concrete-governed tension only
   const bolt = BOLT_PROPS[diameter] || BOLT_PROPS["2"];
   const mat = getMaterialProperties(anchor_material, diameter);
   const { ase, da } = bolt;
   const fya = mat.fya;
   const futa = Math.min(mat.futa, 125, 1.9 * fya);
+  const lambda_a = 1.0; // normal-weight concrete, cast-in anchor
+  const sqrt_fc = Math.sqrt(f_c);
   let abrg = bolt.abrg;
 
-  const phi_steel_N = 0.75, phi_steel_V = 0.65;
-  const phi_conc_N = (reinf_tension === "Yes" || supp_reinf_tension === "Yes") ? 0.75 : 0.70;
-  const phi_conc_V = (reinf_shear === "Yes" || supp_reinf_shear === "Yes") ? 0.75 : 0.70;
-  breakdown.phi = { phi_steel_N, phi_steel_V, phi_conc_N, phi_conc_V };
-  
-  let phiNn = Infinity;
-  if (n_tension > 0) {
-      const Nsa_tot = (ase * futa) * n_tension;
-      breakdown.Nsa = { ase, futa, n_tension, Nsa_tot, phi_Nsa: phi_steel_N * Nsa_tot };
+  // Cracking factors
+  const uncracked = inputs.concrete_cracked === "No";
+  const psi_c_N = uncracked ? 1.25 : 1.0;
+  const psi_c_P = uncracked ? 1.4 : 1.0;
+  const psi_c_V = uncracked ? 1.4 : (parseFloat(cracking_factor) || 1.0);
+  const psi_cp_N = 1.0; // always 1.0 for cast-in anchors
+
+  // Strength reduction factors
+  const phi_steel_N = mat.ductile ? 0.75 : 0.65;
+  const phi_steel_V = mat.ductile ? 0.65 : 0.60;
+  const condA_N = reinf_tension === "Yes" || supp_reinf_tension === "Yes";
+  const condA_V = reinf_shear === "Yes" || supp_reinf_shear === "Yes";
+  const phi_conc_N = condA_N ? 0.75 : 0.70;  // breakout & side-face blowout
+  const phi_conc_V = condA_V ? 0.75 : 0.70;  // shear breakout
+  const phi_pullout = 0.70, phi_pryout = 0.70; // Condition B always
+  breakdown.phi = { phi_steel_N, phi_steel_V, phi_conc_N, phi_conc_V, phi_pullout, phi_pryout, condA_N, condA_V, ductile_steel: mat.ductile };
+  breakdown.factors = { uncracked, psi_c_N, psi_c_P, psi_c_V, psi_cp_N, lambda_a, isSeismic, seismic_factor_N };
+
+  // Concrete breakout in tension. Also needed for pryout, so it is computed
+  // whenever there are anchors (n of the tension group, else the shear group).
+  const nGroupN = n_tension > 0 ? n_tension : n_shear;
+  let Ncb = null;
+  if (nGroupN > 0) {
       const Anco = 9 * hef * hef;
-      const psi_ec_N = 1 / (1 + e_n / (1.5 * hef));
+      const anc_used = Math.min(anc_value, nGroupN * Anco);
+      const psi_ec_N = Math.min(1.0, 1 / (1 + e_n / (1.5 * hef)));
       const ca_min = Math.min(ca1_t, ca2_t, ca3_t, ca4_t);
       const psi_ed_N = (ca_min < 1.5 * hef) ? 0.7 + 0.3 * (ca_min / (1.5 * hef)) : 1.0;
-      const Nb = 24 * 1.0 * Math.sqrt(f_c) * hef ** 1.5 / 1000.0;
-      const Ncb_tot = (anc_value / Anco) * psi_ec_N * psi_ed_N * 1.0 * ((ca_min < 1.5 * hef) ? Math.max(ca_min / (1.5 * hef), 1 / n_tension) : 1.0) * psi_m_n * Nb;
-      const seismic_factor_N = isSeismic ? 0.75 : 1.0;
-      breakdown.Ncb = { anc_value, Anco, psi_ec_N, psi_ed_N, psi_m_n, Nb, Ncb_tot, phi_Ncb: phi_conc_N * Ncb_tot * seismic_factor_N, e_n, hef, ca_min, f_c, seismic_factor_N };
+      const Nb = 24 * lambda_a * sqrt_fc * hef ** 1.5 / 1000.0;
+      const Ncb_tot = (anc_used / Anco) * psi_ec_N * psi_ed_N * psi_c_N * psi_cp_N * psi_m_n * Nb;
+      Ncb = { anc_value, anc_used, Anco, nGroupN, psi_ec_N, psi_ed_N, psi_c_N, psi_cp_N, psi_m_n, Nb, Ncb_tot, phi: phi_conc_N, phi_Ncb: phi_conc_N * seismic_factor_N * Ncb_tot, e_n, hef, ca_min, f_c, seismic_factor_N };
+      breakdown.Ncb = Ncb;
+  }
+
+  let phiNn = 0;
+  if (n_tension > 0) {
+      const Nsa_tot = (ase * futa) * n_tension;
+      breakdown.Nsa = { ase, futa, futa_listed: mat.futa, fya, n_tension, Nsa_tot, phi: phi_steel_N, phi_Nsa: phi_steel_N * Nsa_tot };
+
       let plate_calcs = {};
       if (consider_plate === "Yes") {
           const abolt = (Math.PI / 4) * (da ** 2), d_plate_gross = Math.min(nut_dia + 2 * plate_thick, plate_dia), a_plate_gross = (Math.PI / 4) * (d_plate_gross ** 2);
           abrg = a_plate_gross - abolt;
           plate_calcs = { abolt, d_plate_gross, a_plate_gross };
       }
-      const Npn_tot = (8 * abrg * f_c / 1000.0) * n_tension * 1.0;
-      breakdown.Npn = { abrg, f_c, Np: Npn_tot/n_tension, n_tension, Npn_tot, phi_Npn: phi_conc_N * Npn_tot * seismic_factor_N, abrg_orig: bolt.abrg, plate_calcs };
-      let Nsb_tot = 1e9; 
-      const Nsb_applies = hef > 2.5 * ca1_t;
-      if (Nsb_applies) {
-          Nsb_tot = (160 * ca1_t * Math.sqrt(abrg) * Math.sqrt(f_c) / 1000.0) * n_tension;
-      }
-      const phi_Nsb = Nsb_applies ? phi_conc_N * Nsb_tot * seismic_factor_N : 1e9;
-      breakdown.Nsb = { Nsb_applies, ca1_t, hef, abrg, f_c, Nsb_tot, phi_Nsb, seismic_factor_N };
+      const Np = 8 * abrg * f_c / 1000.0;
+      const Npn_tot = psi_c_P * Np * n_tension;
+      breakdown.Npn = { abrg, f_c, Np, psi_c_P, n_tension, Npn_tot, phi: phi_pullout, phi_Npn: phi_pullout * seismic_factor_N * Npn_tot, abrg_orig: bolt.abrg, plate_calcs, seismic_factor_N };
 
-      phiNn = Math.min(breakdown.Nsa.phi_Nsa, breakdown.Ncb.phi_Ncb, breakdown.Npn.phi_Npn, phi_Nsb);
-      let gov_conc_mode_N = (phiNn === breakdown.Nsa.phi_Nsa) ? "Steel" : (phiNn === breakdown.Ncb.phi_Ncb) ? "Concrete Breakout" : (phiNn === breakdown.Npn.phi_Npn) ? "Pullout" : "Side-Face Blowout";
-      if (reinf_tension === "Yes") { 
-          phiNn = Math.min(breakdown.Nsa.phi_Nsa, breakdown.Npn.phi_Npn, phi_Nsb); 
-          gov_conc_mode_N = (phiNn === breakdown.Nsa.phi_Nsa) ? "Steel" : (phiNn === breakdown.Npn.phi_Npn) ? "Pullout" : "Side-Face Blowout"; 
+      // Side-face blowout: applies when hef > 2.5 ca1 (ca1 = edge in the s1 direction)
+      const Nsb_applies = hef > 2.5 * ca1_t;
+      let Nsb_tot = Infinity, Nsb_single = 0, ca2_sb = 0, corner_factor = 1, rowCount = 1, s_row = 0, Nsbg_row = 0;
+      if (Nsb_applies) {
+          ca2_sb = Math.min(ca2_t, ca4_t);
+          const r = Math.min(Math.max(ca2_sb / ca1_t, 1), 3);
+          corner_factor = (ca2_sb < 3 * ca1_t) ? (1 + r) / 4 : 1.0;
+          Nsb_single = 160 * ca1_t * Math.sqrt(abrg) * lambda_a * sqrt_fc / 1000.0 * corner_factor;
+          // Anchors in the row nearest the edge (spaced along the edge by s2)
+          rowCount = (n_tension === 4 || (n_tension === 2 && s_direction === "s2")) ? 2 : 1;
+          s_row = rowCount === 2 ? s2_t : 0;
+          Nsbg_row = rowCount === 1 ? Nsb_single : (s_row < 6 * ca1_t ? (1 + s_row / (6 * ca1_t)) * Nsb_single : 2 * Nsb_single);
+          // Equal tension per anchor: the edge row governs the whole group.
+          Nsb_tot = Nsbg_row * n_tension / rowCount;
       }
-      breakdown.gov_N = { phiNn, gov_conc_mode_N };
+      const phi_Nsb = Nsb_applies ? phi_conc_N * seismic_factor_N * Nsb_tot : Infinity;
+      breakdown.Nsb = { Nsb_applies, ca1_t, ca2_sb, corner_factor, hef, abrg, f_c, Nsb_single, rowCount, s_row, Nsbg_row, Nsb_tot, phi: phi_conc_N, phi_Nsb, seismic_factor_N };
+
+      const modes = [["Steel", breakdown.Nsa.phi_Nsa], ["Pullout", breakdown.Npn.phi_Npn], ["Side-Face Blowout", phi_Nsb]];
+      if (reinf_tension !== "Yes") modes.splice(1, 0, ["Concrete Breakout", Ncb.phi_Ncb]);
+      const gov = modes.reduce((a, b) => (b[1] < a[1] ? b : a));
+      phiNn = gov[1];
+      breakdown.gov_N = { phiNn, gov_conc_mode_N: gov[0], breakout_excluded: reinf_tension === "Yes" };
 
       const steel_ductility_cap = 1.2 * Nsa_tot;
-      let ductility_reasons = [];
+      const ductility_reasons = [];
       if (!mat.ductile) ductility_reasons.push("Material is non-ductile");
       if (reinf_tension !== "Yes") {
-          if (Ncb_tot < steel_ductility_cap) ductility_reasons.push("Concrete breakout is non-ductile");
+          if (Ncb.Ncb_tot < steel_ductility_cap) ductility_reasons.push("Concrete breakout is non-ductile");
           if (Npn_tot < steel_ductility_cap) ductility_reasons.push("Pullout is non-ductile");
           if (Nsb_applies && Nsb_tot < steel_ductility_cap) ductility_reasons.push("Side-face blowout is non-ductile");
       }
-      breakdown.ductility = { is_ductile_system: mat.ductile && (reinf_tension === "Yes" || ductility_reasons.length === 0), ductility_reasons, steel_ductility_cap };
-  } else { 
-      breakdown.gov_N = { phiNn: 0, gov_conc_mode_N: 'N/A'};
+      breakdown.ductility = { is_ductile_system: mat.ductile && ductility_reasons.length === 0, ductility_reasons, steel_ductility_cap };
+  } else {
+      breakdown.gov_N = { phiNn: 0, gov_conc_mode_N: 'N/A' };
       breakdown.ductility = { is_ductile_system: true, ductility_reasons: [] };
   }
 
-  let phiVn = Infinity;
+  let phiVn = 0;
   if (n_shear > 0) {
-      const Vsa_tot = (0.6 * ase * futa * (grout_pad === "Yes" ? 0.8 : 1.0)) * n_shear;
-      breakdown.Vsa = { ase, futa, n_shear, grout_factor: (grout_pad === "Yes" ? 0.8 : 1.0), Vsa_tot, phi_Vsa: phi_steel_V * Vsa_tot };
+      const grout_factor = grout_pad === "Yes" ? 0.8 : 1.0;
+      const Vsa_tot = (0.6 * ase * futa * grout_factor) * n_shear;
+      breakdown.Vsa = { ase, futa, n_shear, grout_factor, Vsa_tot, phi: phi_steel_V, phi_Vsa: phi_steel_V * Vsa_tot };
+
+      const parallel = shear_dir === "parallel to edge";
       const le = Math.min(8 * da, hef);
-      const Vb = (7 * (le / da)**0.2 * Math.sqrt(da) * Math.sqrt(f_c) * ca1_v**1.5) / 1000;
-      const Avco = 4.5 * ca1_v**2;
-      const psi_ec_V = 1 / (1 + e_v / (1.5 * ca1_v));
-      const psi_ed_V = (ca2_v < 1.5 * ca1_v) ? 0.7 + 0.3 * (ca2_v / (1.5 * ca1_v)) : 1.0;
-      const psi_c_V_val = parseFloat(cracking_factor.split('_')[0]) || 1.0;
-      const psi_h_V = Math.sqrt(1.5 * ca1_v / ha);
-      const Vcb_tot = (avc_value / Avco) * psi_ec_V * psi_ed_V * psi_c_V_val * psi_h_V * Vb * (shear_dir === "parallel to edge" ? 2 : 1);
-      breakdown.Vcb = { avc_value, Avco, psi_ec_V, psi_ed_V, psi_c_V_val, psi_h_V, Vb, Vcb_tot, phi_Vcb: phi_conc_V * Vcb_tot, le, da, f_c, ca1_v, ca2_v, e_v, ha };
+      const Vb_a = 7 * (le / da) ** 0.2 * Math.sqrt(da) * lambda_a * sqrt_fc * ca1_v ** 1.5 / 1000;
+      const Vb_b = 9 * lambda_a * sqrt_fc * ca1_v ** 1.5 / 1000;
+      const Vb = Math.min(Vb_a, Vb_b);
+      const Avco = 4.5 * ca1_v ** 2;
+      const avc_used = Math.min(avc_value, n_shear * Avco);
+      const psi_ec_V = Math.min(1.0, 1 / (1 + e_v / (1.5 * ca1_v)));
+      const psi_ed_V_perp = (ca2_v < 1.5 * ca1_v) ? 0.7 + 0.3 * (ca2_v / (1.5 * ca1_v)) : 1.0;
+      const psi_ed_V = parallel ? 1.0 : psi_ed_V_perp;
+      const psi_h_V = Math.max(1.0, Math.sqrt(1.5 * ca1_v / ha));
+      const parallel_factor = parallel ? 2 : 1;
+      const Vcb_tot = parallel_factor * (avc_used / Avco) * psi_ec_V * psi_ed_V * psi_c_V * psi_h_V * Vb;
+      breakdown.Vcb = { avc_value, avc_used, Avco, psi_ec_V, psi_ed_V, psi_c_V_val: psi_c_V, psi_h_V, Vb_a, Vb_b, Vb, Vcb_tot, phi: phi_conc_V, phi_Vcb: phi_conc_V * Vcb_tot, le, da, f_c, ca1_v, ca2_v, e_v, ha, parallel, parallel_factor };
+
       const kcp = (hef < 2.5) ? 1.0 : 2.0;
-      const Vcp_tot = kcp * (breakdown.Ncb?.Ncb_tot || 0);
-      breakdown.Vcp = { kcp, Ncb_val: breakdown.Ncb?.Ncb_tot || 0, Vcp_tot, phi_Vcp: phi_conc_V * Vcp_tot };
-      phiVn = Math.min(breakdown.Vsa.phi_Vsa, breakdown.Vcb.phi_Vcb, breakdown.Vcp.phi_Vcp);
-      let gov_conc_mode_V = (phiVn === breakdown.Vsa.phi_Vsa) ? "Steel" : (phiVn === breakdown.Vcb.phi_Vcb) ? "Concrete Breakout" : "Concrete Pryout";
-      if (reinf_shear === "Yes") { phiVn = Math.min(breakdown.Vsa.phi_Vsa, breakdown.Vcp.phi_Vcp); gov_conc_mode_V = (phiVn === breakdown.Vsa.phi_Vsa) ? "Steel" : "Concrete Pryout"; }
-      breakdown.gov_V = { phiVn, gov_conc_mode_V };
+      const Ncp = Ncb ? Ncb.Ncb_tot : 0; // cast-in: Ncp = Ncb (no seismic factor; it is a shear mode)
+      const Vcp_tot = kcp * Ncp;
+      breakdown.Vcp = { kcp, Ncb_val: Ncp, Vcp_tot, phi: phi_pryout, phi_Vcp: phi_pryout * Vcp_tot };
+
+      const modes = [["Steel", breakdown.Vsa.phi_Vsa], ["Concrete Pryout", breakdown.Vcp.phi_Vcp]];
+      if (reinf_shear !== "Yes") modes.splice(1, 0, ["Concrete Breakout", breakdown.Vcb.phi_Vcb]);
+      const gov = modes.reduce((a, b) => (b[1] < a[1] ? b : a));
+      phiVn = gov[1];
+      breakdown.gov_V = { phiVn, gov_conc_mode_V: gov[0], breakout_excluded: reinf_shear === "Yes" };
   } else {
       breakdown.gov_V = { phiVn: 0, gov_conc_mode_V: 'N/A' };
   }
-  
-  const ratioN = (n_ua > 0 && isFinite(phiNn) && phiNn > 0) ? n_ua / phiNn : 0;
-  const ratioV = (v_ua > 0 && isFinite(phiVn) && phiVn > 0) ? v_ua / phiVn : 0;
-  const isCombined = n_ua > 0 && v_ua > 0;
-  let interaction = ratioN + ratioV, eqUsed = "N/A", limit = 1.0;
-  if(isCombined) {
-      limit = 1.2;
-      eqUsed = "Eq. 17.8.3: (N/phiNn + V/phiVn)";
-      if (breakdown.gov_N.gov_conc_mode_N === 'Steel' || breakdown.gov_V.gov_conc_mode_V === 'Steel') {
-        eqUsed = "Eq. 17.8.2: (N/phiNn + V/phiVn)";
-        limit = 1.2;
-      }
+
+  // Interaction (318-14 17.6 / 318-19 17.8). A load with no anchors to carry it fails.
+  const ratio = (load, cap) => (load > 0 ? (cap > 0 ? load / cap : Infinity) : 0);
+  const ratioN = ratio(n_ua, phiNn);
+  const ratioV = ratio(v_ua, phiVn);
+  let interaction, limit, eqUsed, clause, isCombined = false;
+  if (ratioV <= 0.2) {
+      interaction = ratioN; limit = 1.0; clause = code.interactionN;
+      eqUsed = v_ua > 0 ? `V<sub>ua</sub> &le; 0.2&phi;V<sub>n</sub>: full tension strength, N<sub>ua</sub>/&phi;N<sub>n</sub> &le; 1.0 (${clause})` : `Tension only: N<sub>ua</sub>/&phi;N<sub>n</sub> &le; 1.0 (${clause})`;
+  } else if (ratioN <= 0.2) {
+      interaction = ratioV; limit = 1.0; clause = code.interactionV;
+      eqUsed = n_ua > 0 ? `N<sub>ua</sub> &le; 0.2&phi;N<sub>n</sub>: full shear strength, V<sub>ua</sub>/&phi;V<sub>n</sub> &le; 1.0 (${clause})` : `Shear only: V<sub>ua</sub>/&phi;V<sub>n</sub> &le; 1.0 (${clause})`;
+  } else {
+      isCombined = true; interaction = ratioN + ratioV; limit = 1.2; clause = code.eqInteraction;
+      eqUsed = `Eq. ${clause}: N<sub>ua</sub>/&phi;N<sub>n</sub> + V<sub>ua</sub>/&phi;V<sub>n</sub> &le; 1.2`;
   }
-  const pass = interaction <= limit;
-  breakdown.interaction = { ratioN, ratioV, interaction, eqUsed, pass, isCombined, limit };
-  
-  const ductilityText = breakdown.ductility.is_ductile_system ? "Ductile" : `Non-Ductile (${breakdown.ductility.ductility_reasons.length > 0 ? breakdown.ductility.ductility_reasons[0].slice(0,25) : '...'})`;
-  return { ductilityText, plateEffectText: consider_plate === "Yes" ? "Considered" : "Not Considered", phiNn: isFinite(phiNn) ? phiNn : 0, phiVn: isFinite(phiVn) ? phiVn : 0, interaction: isNaN(interaction) ? 0 : interaction, eqUsed, pass, breakdown };
+  // Each ratio must also be within 1.0 on its own.
+  const pass = interaction <= limit && ratioN <= 1.0 && ratioV <= 1.0;
+  breakdown.interaction = { ratioN, ratioV, interaction, eqUsed, clause, pass, isCombined, limit };
+
+  const ductilityText = breakdown.ductility.is_ductile_system ? "Ductile" : `Non-Ductile (${breakdown.ductility.ductility_reasons.length > 0 ? breakdown.ductility.ductility_reasons[0] : '...'})`;
+  return { ductilityText, plateEffectText: consider_plate === "Yes" ? "Considered" : "Not Considered", phiNn, phiVn, interaction, limit, eqUsed, pass, breakdown };
 }
 
 function refresh() {
   const inputs = readInputs();
+  applyAciLabels(inputs.code_edition);
   updateSpacingInputs(inputs);
   updateAreaInputs(inputs);
   
@@ -532,7 +587,9 @@ function refresh() {
   document.getElementById("res-nua").textContent = `${inputs.n_ua.toFixed(1)} kips`;
   document.getElementById("res-vn").textContent = `${results.phiVn.toFixed(1)} kips`;
   document.getElementById("res-vua").textContent = `${inputs.v_ua.toFixed(1)} kips`;
-  document.getElementById("res-interaction").textContent = `${results.interaction.toFixed(2)}`;
+  const fmtRatio = (r) => (isFinite(r) ? r.toFixed(2) : "No capacity");
+  document.getElementById("res-interaction").textContent = `${fmtRatio(results.interaction)} (limit ${results.limit.toFixed(1)})`;
+  document.getElementById("res-interaction-note").innerHTML = results.eqUsed;
   const statusBox = document.getElementById("status-box");
   statusBox.className = `status-box ${results.pass ? "good" : "bad"}`;
   document.getElementById("status-text").textContent = results.pass ? "PASS" : "FAIL / OVERLOAD";
@@ -541,11 +598,11 @@ function refresh() {
   const breakdownEl = document.getElementById("capacity-breakdown");
   if (breakdownEl && bd.gov_N && bd.gov_V) {
       let tHTML = `<strong>Tension (&phi;N<sub>n</sub>):</strong><ul>`;
-      if(inputs.n_tension>0) tHTML += `<li>Steel: <strong>${bd.Nsa.phi_Nsa.toFixed(1)} kips</strong></li><li>Breakout: <strong>${bd.Ncb.phi_Ncb.toFixed(1)} kips</strong></li><li>Pullout: <strong>${bd.Npn.phi_Npn.toFixed(1)} kips</strong></li>` + (bd.Nsb.Nsb_applies ? `<li>Side-Face: <strong>${bd.Nsb.phi_Nsb.toFixed(1)} kips</strong></li>` : '');
+      if(inputs.n_tension>0) tHTML += `<li>Steel: <strong>${bd.Nsa.phi_Nsa.toFixed(1)} kips</strong></li><li>Breakout: <strong>${bd.Ncb.phi_Ncb.toFixed(1)} kips</strong>${bd.gov_N.breakout_excluded ? ' (n/a, anchor reinf.)' : ''}</li><li>Pullout: <strong>${bd.Npn.phi_Npn.toFixed(1)} kips</strong></li>` + (bd.Nsb.Nsb_applies ? `<li>Side-Face: <strong>${bd.Nsb.phi_Nsb.toFixed(1)} kips</strong></li>` : '');
       else tHTML += `<li>N/A</li>`;
       tHTML += `</ul><em>Gov: ${bd.gov_N.gov_conc_mode_N||'N/A'}</em>`;
       let sHTML = `<strong>Shear (&phi;V<sub>n</sub>):</strong><ul>`;
-      if(inputs.n_shear>0) sHTML += `<li>Steel: <strong>${bd.Vsa.phi_Vsa.toFixed(1)} kips</strong></li><li>Breakout: <strong>${bd.Vcb.phi_Vcb.toFixed(1)} kips</strong></li><li>Pryout: <strong>${bd.Vcp.phi_Vcp.toFixed(1)} kips</strong></li>`;
+      if(inputs.n_shear>0) sHTML += `<li>Steel: <strong>${bd.Vsa.phi_Vsa.toFixed(1)} kips</strong></li><li>Breakout: <strong>${bd.Vcb.phi_Vcb.toFixed(1)} kips</strong>${bd.gov_V.breakout_excluded ? ' (n/a, anchor reinf.)' : ''}</li><li>Pryout: <strong>${bd.Vcp.phi_Vcp.toFixed(1)} kips</strong></li>`;
       else sHTML += `<li>N/A</li>`;
       sHTML += `</ul><em>Gov: ${bd.gov_V.gov_conc_mode_V||'N/A'}</em>`;
       breakdownEl.innerHTML = `<div class="bd-group">${tHTML}</div><div class="bd-group">${sHTML}</div>`;
@@ -554,7 +611,10 @@ function refresh() {
 
 function loadSavedInputs() {
   const savedData = localStorage.getItem("anchorAppInputs");
-  if (savedData) { try { const d = JSON.parse(savedData); Object.keys(d).forEach(id => { const el = document.getElementById(id); if (el) el.value = d[id]; }); } catch (e) { console.error(e); } }
+  if (savedData) { try { const d = JSON.parse(savedData);
+    // Older saves stored "uncracked" as a Psi_c,V option; it is now its own input.
+    if (d.cracking_factor === "1.4_uncracked") { d.cracking_factor = "1.4"; d.concrete_cracked = "No"; }
+    Object.keys(d).forEach(id => { const el = document.getElementById(id); if (el) el.value = d[id]; }); } catch (e) { console.error(e); } }
 }
 function saveCurrentInputs() {
   const d = {};

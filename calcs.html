@@ -6,7 +6,7 @@
     <title>Anchor Bolt Design — Calculation Report</title>
     <link rel="stylesheet" href="./css/calcs.css">
 </head>
-<body>
+<body data-title-prefix="Anchor Bolt Design — Calculation Report">
     <div class="toolbar no-print">
         <a class="toolbar-link" href="./index.html">&larr; Back to calculator</a>
         <button type="button" class="print-btn" onclick="window.print()">Print / Save as PDF</button>
@@ -25,7 +25,7 @@
                 </span>
                 <div class="brand-text">
                     <span class="title-main">Anchor Bolt Design — Calculation Report</span>
-                    <span class="title-sub">Calculations per ACI 318-19 Chapter 17 &amp; PIP STE05121</span>
+                    <span class="title-sub">Calculations per <span data-aci="chapter">ACI 318-19 Chapter 17</span> &amp; PIP STE05121</span>
                 </div>
             </div>
         </header>
@@ -71,6 +71,7 @@
             });
         })();
     </script>
+    <script src="./js/codes.js"></script>
     <script src="./js/calcs.js"></script>
 </body>
 </html>

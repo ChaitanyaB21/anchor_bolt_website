@@ -29,9 +29,14 @@ works fine over `file://`.
   status box — styled like the sheet's own conditional formatting
   (green / red fill).
 
-**All calculated numbers are placeholders** (see `mockCalculate()` in
-`js/app.js`) — clearly flagged in the UI. They are not real ACI 318-19
-results.
+- **Design code edition** dropdown (Design Considerations): ACI 318-14 or
+  ACI 318-19. For cast-in headed anchors both editions use the same
+  equations and factors, so the edition switches every clause reference
+  on the main page and in the calculation report (`js/codes.js`).
+
+Results are calculated in `calculateResults()` in `js/app.js` for cast-in
+headed anchors in normal-weight concrete. Always verify with a qualified
+engineer.
 
 ## Wiring up your Python backend later
 
@@ -58,7 +63,10 @@ same shape — no other UI code needs to change.
 anchor_web_frontend/
 ├── index.html          # full input form + side/top view containers + results panel
 ├── css/styles.css       # white/black/yellow/grey visual system
-└── js/app.js            # single file: read inputs, draw both SVG views, placeholder results
+├── calcs.html          # printable step-by-step calculation report
+├── js/codes.js         # ACI 318-14 / 318-19 clause references
+├── js/app.js           # read inputs, draw both SVG views, calculation engine
+└── js/calcs.js         # renders the calculation report
 ```
 
 ## Known simplifications

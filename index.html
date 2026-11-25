@@ -6,7 +6,7 @@
 <title>Anchor Bolt Design — ACI 318-19 Chapter 17</title>
 <link rel="stylesheet" href="./css/styles.css" />
 </head>
-<body>
+<body data-title-prefix="Anchor Bolt Design">
 
 <div class="app">
 
@@ -22,11 +22,11 @@
       </span>
       <div class="brand-text">
         <span class="title-main">Anchor Bolt Design</span>
-        <span class="title-sub">Calculations per ACI 318-19 Chapter 17 &amp; PIP STE05121. Factored loads for N<sub>ua</sub> and V<sub>ua</sub>.</span>
+        <span class="title-sub">Calculations per <span data-aci="chapter">ACI 318-19 Chapter 17</span> &amp; PIP STE05121. Factored loads for N<sub>ua</sub> and V<sub>ua</sub>.</span>
       </div>
     </div>
     <div class="title-badges">
-      <span class="badge">ACI 318-19 Ch. 17</span>
+      <span class="badge"><span data-aci="name">ACI 318-19</span> Ch. 17</span>
       <span class="badge">PIP STE05121</span>
     </div>
   </header>
@@ -65,6 +65,14 @@
       <section class="input-group">
         <h2>Design Considerations</h2>
         <div class="field">
+          <label for="code_edition">Design code edition</label>
+          <select class="yellow" id="code_edition">
+            <option value="318-19" selected>ACI 318-19</option>
+            <option value="318-14">ACI 318-14</option>
+          </select>
+          <span class="note">(Updates all clause references and the calculation report)</span>
+        </div>
+        <div class="field">
           <label for="ductility_req">Tension Ductility required?</label>
           <select class="yellow" id="ductility_req"><option>Yes</option><option selected>No</option></select>
           <span class="note">(See ductility discussion - Note 11)</span>
@@ -75,11 +83,16 @@
             <option>A, B</option>
             <option selected>C, D, E, or F</option>
           </select>
-          <span class="note">(ACI 318-19 Sec. 17.10)</span>
+          <span class="note">(<span data-aci="seismic">ACI 318-19 Sec. 17.10</span>)</span>
         </div>
         <div class="field">
           <label for="f_c">Specified concrete strength (psi) = f'c</label>
           <input type="number" class="yellow" id="f_c" value="4500" step="50">
+        </div>
+        <div class="field">
+          <label for="concrete_cracked">Is the concrete cracked at service loads?</label>
+          <select class="yellow" id="concrete_cracked"><option selected>Yes</option><option>No</option></select>
+          <span class="note">(No = uncracked: &Psi;<sub>c,N</sub> = 1.25, &Psi;<sub>c,P</sub> = 1.4, &Psi;<sub>c,V</sub> = 1.4)</span>
         </div>
         <div class="field">
           <label for="cracking_factor">Cracking modification factor, &Psi;<sub>c,V</sub></label>
@@ -87,9 +100,8 @@
             <option value="1.0">1.0 - No edge reinf or edge reinf rebar &lt; #4</option>
             <option value="1.2" selected>1.2 - Edge reinf rebar &gt;= #4</option>
             <option value="1.4">1.4 - Edge reinf rebar &gt;= #4 + stirrups @ &lt;= 4 in.</option>
-            <option value="1.4_uncracked">1.4 - Located in region without cracking (f_t &lt; f_r)</option>
           </select>
-          <span class="note">(ACI 318-19 Section 17.7.2.5 / PIP Table)</span>
+          <span class="note">(<span data-aci="psi_c_V">ACI 318-19 Section 17.7.2.5 / PIP Table</span>; cracked concrete only)</span>
         </div>
         <div class="field">
           <label for="psi_m_n">Breakout overturning factor &Psi;<sub>m,N</sub> (1 if no overturning couple)</label>
@@ -110,7 +122,7 @@
         <div class="field">
           <label for="supp_reinf_shear">Supplementary reinf. provided for Condition A (shear)?</label>
           <select class="yellow" id="supp_reinf_shear"><option>Yes</option><option selected>No</option></select>
-          <span class="note">(ACI 318-19 Table 17.5.3(b))</span>
+          <span class="note">(<span data-aci="phi">ACI 318-19 Table 17.5.3(a), (b), (c)</span>)</span>
         </div>
       </section>
 
@@ -266,7 +278,7 @@
         </div>
       </section>
 
-      <p class="note disclaimer">Diagrams and summary update live. Result values are calculated per ACI 318-19 Chapter 17 & PIP STE05121.</p>
+      <p class="note disclaimer">Diagrams and summary update live. Result values are calculated per <span data-aci="chapter">ACI 318-19 Chapter 17</span> &amp; PIP STE05121.</p>
     </aside>
 
     <div class="resizer" id="resizer-left"></div>
@@ -321,6 +333,7 @@
         <span class="result-label">Eq. 3: Interaction Ratio</span>
         <span class="result-val" id="res-interaction">—</span>
       </div>
+      <p class="note" id="res-interaction-note"></p>
 
       <div class="status-box" id="status-box">
         <span id="status-text">—</span>
@@ -333,12 +346,13 @@
       
       <button id="show-calcs-btn" class="show-calcs-btn">Show Detailed Calculation</button>
 
-      <p class="note disclaimer">ACI 318-19 Chapter 17 design checks.</p>
+      <p class="note disclaimer"><span data-aci="chapter">ACI 318-19 Chapter 17</span> design checks.</p>
     </aside>
 
   </div>
 </div>
 
+<script src="./js/codes.js"></script>
 <script src="./js/app.js"></script>
 </body>
 </html>
